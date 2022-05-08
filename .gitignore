@@ -1,0 +1,16 @@
+__pycache__
+ngrok.exe
+ngrok.bat
+config.py
+config_prod.py
+config_local.py
+dist/
+crashes/
+webstats/
+fileshare/
+*.bak
+*.bin
+*motd_image.jpg
+*motd_popup_image.jpg
+*dynamic_matchmaking_histogram*.jpg
+*dynamic_matchmaking_nightmap.jpg

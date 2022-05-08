@@ -1,0 +1,1 @@
+from routes.gameapi.index import *
