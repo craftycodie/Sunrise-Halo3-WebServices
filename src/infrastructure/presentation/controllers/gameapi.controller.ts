@@ -1,4 +1,4 @@
-import { Controller, Get, Inject, Query } from '@nestjs/common';
+import { Controller, Get, Inject, Post, Query } from '@nestjs/common';
 import ILogger, { ILoggerSymbol } from '../../../ILogger';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { GetFileshareQuery } from 'src/application/queries/GetFileshareQuery';
@@ -46,5 +46,32 @@ export class GameApiController {
     );
 
     return mapFileshareToResponse(fileshare);
+  }
+
+  @Get('/FilesNewUpload.ashx')
+  async startFileUpload() {
+    return;
+  }
+
+  @Post('/FilesUpload.ashx')
+  async uploadFile() {
+    return;
+  }
+
+  @Post('/MachineUpdateNetworkStats.ashx')
+  async machineUpdateNetworkStats() {
+    return;
+  }
+
+  @Get('/UserUpdatePlayerStats.ashx')
+  @ApiQuery({ name: 'title', type: 'number' })
+  @ApiQuery({ name: 'userId' })
+  @ApiQuery({ name: 'highestSkill', type: 'number' })
+  async userUpdatePlayerStats(
+    @Query('title') titleID,
+    @Query('userId') userID,
+    @Query('highestSkill') highestSkil,
+  ) {
+    return;
   }
 }

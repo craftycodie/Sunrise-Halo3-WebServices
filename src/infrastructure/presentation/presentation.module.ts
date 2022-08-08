@@ -3,6 +3,7 @@ import { CqrsModule } from '@nestjs/cqrs';
 import { GameApiController } from './controllers/gameapi.controller';
 import { MachineStorageController } from './controllers/machinestorage.controller';
 import { TitleStorageController } from './controllers/titlestorage.controller';
+import { UploadServerController } from './controllers/uploadserver.controller';
 import { UserStorageController } from './controllers/userstorage.controller';
 
 @Module({
@@ -12,6 +13,7 @@ import { UserStorageController } from './controllers/userstorage.controller';
     TitleStorageController,
     UserStorageController,
     MachineStorageController,
+    UploadServerController,
   ],
   providers: [],
 })
