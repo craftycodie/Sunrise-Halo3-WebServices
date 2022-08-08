@@ -4,16 +4,15 @@ import {
   Header,
   Inject,
   Param,
-  Res,
   StreamableFile,
 } from '@nestjs/common';
 import ILogger, { ILoggerSymbol } from '../../../ILogger';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { createReadStream } from 'fs';
 import { join } from 'path';
-import { ApiParam } from '@nestjs/swagger';
-import { Response } from 'express';
+import { ApiParam, ApiTags } from '@nestjs/swagger';
 
+@ApiTags('Title Storage')
 @Controller('/title/tracked/:titleType/:titleId')
 export class TitleStorageController {
   constructor(

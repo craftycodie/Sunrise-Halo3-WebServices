@@ -5,7 +5,7 @@ import { GetFileshareQuery } from 'src/application/queries/GetFileshareQuery';
 import UserID from 'src/domain/value-objects/UserId';
 import ShareID from 'src/domain/value-objects/ShareId';
 import Locale from 'src/domain/value-objects/Locale';
-import { ApiQuery } from '@nestjs/swagger';
+import { ApiQuery, ApiTags } from '@nestjs/swagger';
 
 const mapFileshareToResponse = (fileshare) => {
   return `QuoteBytes: ${fileshare.quotaBytes}
@@ -16,6 +16,7 @@ SubscriptionHash: ${fileshare.subscriptionHash}
 Message: ${fileshare.message}`;
 };
 
+@ApiTags('Game API')
 @Controller('/gameapi')
 export class GameApiController {
   constructor(
