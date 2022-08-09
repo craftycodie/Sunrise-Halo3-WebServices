@@ -2,6 +2,7 @@ import 'dotenv/config';
 import { NestFactory } from '@nestjs/core';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { SunriseModule } from './src/sunrise.module';
+import PresentationSettings from 'src/infrastructure/presentation/settings/PresentationSettings';
 
 async function bootstrap() {
   const app = await NestFactory.create(SunriseModule);
@@ -15,6 +16,6 @@ async function bootstrap() {
   SwaggerModule.setup('api', app, document);
 
   app.enableCors();
-  await app.listen(8080);
+  await app.listen(new PresentationSettings().get().port);
 }
 bootstrap();

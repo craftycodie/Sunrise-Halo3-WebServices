@@ -1,5 +1,6 @@
-import { Module } from '@nestjs/common';
+import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { CqrsModule } from '@nestjs/cqrs';
+import { AppLoggerMiddleware } from './AppLoggerMiddleware';
 import { GameApiController } from './controllers/gameapi.controller';
 import { MachineStorageController } from './controllers/machinestorage.controller';
 import { TitleStorageController } from './controllers/titlestorage.controller';
@@ -17,4 +18,8 @@ import { UserStorageController } from './controllers/userstorage.controller';
   ],
   providers: [],
 })
-export class PresentationModule {}
+export class PresentationModule implements NestModule {
+  configure(consumer: MiddlewareConsumer): void {
+    consumer.apply(AppLoggerMiddleware).forRoutes('*');
+  }
+}

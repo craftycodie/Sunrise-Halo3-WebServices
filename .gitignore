@@ -36,4 +36,5 @@ lerna-debug.log*
 
 .env
 
-/public/title
+/public/storage
+/uploads

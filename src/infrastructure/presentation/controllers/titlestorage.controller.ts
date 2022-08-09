@@ -3,7 +3,9 @@ import {
   Get,
   Header,
   Inject,
+  NotFoundException,
   Param,
+  Res,
   StreamableFile,
 } from '@nestjs/common';
 import ILogger, { ILoggerSymbol } from '../../../ILogger';
@@ -11,9 +13,11 @@ import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { createReadStream } from 'fs';
 import { join } from 'path';
 import { ApiParam, ApiTags } from '@nestjs/swagger';
+import { stat } from 'fs/promises';
+import { Response } from 'express';
 
 @ApiTags('Title Storage')
-@Controller('/title/tracked/:titleType/:titleId')
+@Controller('/storage/title/:titleType/:titleId')
 export class TitleStorageController {
   constructor(
     @Inject(ILoggerSymbol) private readonly logger: ILogger,
@@ -29,14 +33,12 @@ export class TitleStorageController {
     @Param('titleType') titleType: string,
     @Param('titleId') titleId: string,
     @Param('hoppersPath') hoppersPath: string,
+    @Res({ passthrough: true }) res: Response,
   ) {
-    const file = createReadStream(
-      join(
-        process.cwd(),
-        `public/title/${titleType}/${titleId}/${hoppersPath}/manifest_001.bin`,
-      ),
+    return await this.sendLocalFile(
+      `${titleType}/${titleId}/${hoppersPath}/manifest_001.bin`,
+      res,
     );
-    return new StreamableFile(file);
   }
 
   @Get('/:hoppersPath/dynamic_hopper_statistics.bin')
@@ -47,14 +49,12 @@ export class TitleStorageController {
     @Param('titleType') titleType: string,
     @Param('titleId') titleId: string,
     @Param('hoppersPath') hoppersPath: string,
+    @Res({ passthrough: true }) res: Response,
   ) {
-    const file = createReadStream(
-      join(
-        process.cwd(),
-        `public/title/${titleType}/${titleId}/${hoppersPath}/dynamic_hopper_statistics.bin`,
-      ),
+    return await this.sendLocalFile(
+      `${titleType}/${titleId}/${hoppersPath}/dynamic_hopper_statistics.bin`,
+      res,
     );
-    return new StreamableFile(file);
   }
 
   @Get('/:hoppersPath/dynamic_matchmaking_nightmap.jpg')
@@ -66,15 +66,12 @@ export class TitleStorageController {
     @Param('titleType') titleType: string,
     @Param('titleId') titleId: string,
     @Param('hoppersPath') hoppersPath: string,
+    @Res({ passthrough: true }) res: Response,
   ) {
-    const file = createReadStream(
-      join(
-        process.cwd(),
-        `public/title/${titleType}/${titleId}/${hoppersPath}/dynamic_matchmaking_nightmap.jpg`,
-      ),
+    return await this.sendLocalFile(
+      `${titleType}/${titleId}/${hoppersPath}/dynamic_matchmaking_nightmap.jpg`,
+      res,
     );
-
-    return new StreamableFile(file);
   }
 
   @Get('/:hoppersPath/matchmaking_hopper_011.bin')
@@ -85,14 +82,12 @@ export class TitleStorageController {
     @Param('titleType') titleType: string,
     @Param('titleId') titleId: string,
     @Param('hoppersPath') hoppersPath: string,
+    @Res({ passthrough: true }) res: Response,
   ) {
-    const file = createReadStream(
-      join(
-        process.cwd(),
-        `public/title/${titleType}/${titleId}/${hoppersPath}/matchmaking_hopper_011.bin`,
-      ),
+    return await this.sendLocalFile(
+      `${titleType}/${titleId}/${hoppersPath}/matchmaking_hopper_011.bin`,
+      res,
     );
-    return new StreamableFile(file);
   }
 
   @Get('/:hoppersPath/network_configuration_135.bin')
@@ -103,14 +98,12 @@ export class TitleStorageController {
     @Param('titleType') titleType: string,
     @Param('titleId') titleId: string,
     @Param('hoppersPath') hoppersPath: string,
+    @Res({ passthrough: true }) res: Response,
   ) {
-    const file = createReadStream(
-      join(
-        process.cwd(),
-        `public/title/${titleType}/${titleId}/${hoppersPath}/network_configuration_135.bin`,
-      ),
+    return await this.sendLocalFile(
+      `${titleType}/${titleId}/${hoppersPath}/network_configuration_135.bin`,
+      res,
     );
-    return new StreamableFile(file);
   }
 
   @Get('/:hoppersPath/rsa_manifest.bin')
@@ -121,14 +114,12 @@ export class TitleStorageController {
     @Param('titleType') titleType: string,
     @Param('titleId') titleId: string,
     @Param('hoppersPath') hoppersPath: string,
+    @Res({ passthrough: true }) res: Response,
   ) {
-    const file = createReadStream(
-      join(
-        process.cwd(),
-        `public/title/${titleType}/${titleId}/${hoppersPath}/rsa_manifest.bin`,
-      ),
+    return await this.sendLocalFile(
+      `${titleType}/${titleId}/${hoppersPath}/rsa_manifest.bin`,
+      res,
     );
-    return new StreamableFile(file);
   }
 
   @Get('/:hoppersPath/:locale/motd.bin')
@@ -141,14 +132,12 @@ export class TitleStorageController {
     @Param('titleId') titleId: string,
     @Param('hoppersPath') hoppersPath: string,
     @Param('locale') locale: string,
+    @Res({ passthrough: true }) res: Response,
   ) {
-    const file = createReadStream(
-      join(
-        process.cwd(),
-        `public/title/${titleType}/${titleId}/${hoppersPath}/${locale}/motd.bin`,
-      ),
+    return await this.sendLocalFile(
+      `${titleType}/${titleId}/${hoppersPath}/${locale}/motd.bin`,
+      res,
     );
-    return new StreamableFile(file);
   }
 
   @Get('/:hoppersPath/:locale/motd_popup.bin')
@@ -161,14 +150,12 @@ export class TitleStorageController {
     @Param('titleId') titleId: string,
     @Param('hoppersPath') hoppersPath: string,
     @Param('locale') locale: string,
+    @Res({ passthrough: true }) res: Response,
   ) {
-    const file = createReadStream(
-      join(
-        process.cwd(),
-        `public/title/${titleType}/${titleId}/${hoppersPath}/${locale}/motd_popup.bin`,
-      ),
+    return await this.sendLocalFile(
+      `${titleType}/${titleId}/${hoppersPath}/${locale}/motd_popup.bin`,
+      res,
     );
-    return new StreamableFile(file);
   }
 
   @Get('/:hoppersPath/:locale/blue_motd.bin')
@@ -181,14 +168,12 @@ export class TitleStorageController {
     @Param('titleId') titleId: string,
     @Param('hoppersPath') hoppersPath: string,
     @Param('locale') locale: string,
+    @Res({ passthrough: true }) res: Response,
   ) {
-    const file = createReadStream(
-      join(
-        process.cwd(),
-        `public/title/${titleType}/${titleId}/${hoppersPath}/${locale}/blue_motd.bin`,
-      ),
+    return await this.sendLocalFile(
+      `${titleType}/${titleId}/${hoppersPath}/${locale}/blue_motd.bin`,
+      res,
     );
-    return new StreamableFile(file);
   }
 
   @Get('/:hoppersPath/:locale/blue_motd_popup.bin')
@@ -201,14 +186,12 @@ export class TitleStorageController {
     @Param('titleId') titleId: string,
     @Param('hoppersPath') hoppersPath: string,
     @Param('locale') locale: string,
+    @Res({ passthrough: true }) res: Response,
   ) {
-    const file = createReadStream(
-      join(
-        process.cwd(),
-        `public/title/${titleType}/${titleId}/${hoppersPath}/${locale}/blue_motd_popup.bin`,
-      ),
+    return await this.sendLocalFile(
+      `${titleType}/${titleId}/${hoppersPath}/${locale}/blue_motd_popup.bin`,
+      res,
     );
-    return new StreamableFile(file);
   }
 
   @Get('/:hoppersPath/:locale/motd_popup_image.jpg')
@@ -222,14 +205,12 @@ export class TitleStorageController {
     @Param('titleId') titleId: string,
     @Param('hoppersPath') hoppersPath: string,
     @Param('locale') locale: string,
+    @Res({ passthrough: true }) res: Response,
   ) {
-    const file = createReadStream(
-      join(
-        process.cwd(),
-        `public/title/${titleType}/${titleId}/${hoppersPath}/${locale}/motd_popup_image.jpg`,
-      ),
+    return await this.sendLocalFile(
+      `${titleType}/${titleId}/${hoppersPath}/${locale}/motd_popup_image.jpg`,
+      res,
     );
-    return new StreamableFile(file);
   }
 
   @Get('/:hoppersPath/:locale/blue_motd_popup_image.jpg')
@@ -243,14 +224,12 @@ export class TitleStorageController {
     @Param('titleId') titleId: string,
     @Param('hoppersPath') hoppersPath: string,
     @Param('locale') locale: string,
+    @Res({ passthrough: true }) res: Response,
   ) {
-    const file = createReadStream(
-      join(
-        process.cwd(),
-        `public/title/${titleType}/${titleId}/${hoppersPath}/${locale}/blue_motd_popup_image.jpg`,
-      ),
+    return await this.sendLocalFile(
+      `${titleType}/${titleId}/${hoppersPath}/${locale}/blue_motd_popup_image.jpg`,
+      res,
     );
-    return new StreamableFile(file);
   }
 
   @Get('/:hoppersPath/:locale/motd_image.jpg')
@@ -264,14 +243,12 @@ export class TitleStorageController {
     @Param('titleId') titleId: string,
     @Param('hoppersPath') hoppersPath: string,
     @Param('locale') locale: string,
+    @Res({ passthrough: true }) res: Response,
   ) {
-    const file = createReadStream(
-      join(
-        process.cwd(),
-        `public/title/${titleType}/${titleId}/${hoppersPath}/${locale}/motd_image.jpg`,
-      ),
+    return await this.sendLocalFile(
+      `${titleType}/${titleId}/${hoppersPath}/${locale}/motd_image.jpg`,
+      res,
     );
-    return new StreamableFile(file);
   }
 
   @Get('/:hoppersPath/:locale/blue_motd_image.jpg')
@@ -285,14 +262,12 @@ export class TitleStorageController {
     @Param('titleId') titleId: string,
     @Param('hoppersPath') hoppersPath: string,
     @Param('locale') locale: string,
+    @Res({ passthrough: true }) res: Response,
   ) {
-    const file = createReadStream(
-      join(
-        process.cwd(),
-        `public/title/${titleType}/${titleId}/${hoppersPath}/${locale}/blue_motd_image.jpg`,
-      ),
+    return await this.sendLocalFile(
+      `${titleType}/${titleId}/${hoppersPath}/${locale}/blue_motd_image.jpg`,
+      res,
     );
-    return new StreamableFile(file);
   }
 
   @Get('/:hoppersPath/:locale/matchmaking_tips.bin')
@@ -305,14 +280,12 @@ export class TitleStorageController {
     @Param('titleId') titleId: string,
     @Param('hoppersPath') hoppersPath: string,
     @Param('locale') locale: string,
+    @Res({ passthrough: true }) res: Response,
   ) {
-    const file = createReadStream(
-      join(
-        process.cwd(),
-        `public/title/${titleType}/${titleId}/${hoppersPath}/${locale}/matchmaking_tips.bin`,
-      ),
+    return await this.sendLocalFile(
+      `${titleType}/${titleId}/${hoppersPath}/${locale}/matchmaking_tips.bin`,
+      res,
     );
-    return new StreamableFile(file);
   }
 
   @Get('/:hoppersPath/:locale/matchmaking_hopper_descriptions_003.bin')
@@ -325,14 +298,12 @@ export class TitleStorageController {
     @Param('titleId') titleId: string,
     @Param('hoppersPath') hoppersPath: string,
     @Param('locale') locale: string,
+    @Res({ passthrough: true }) res: Response,
   ) {
-    const file = createReadStream(
-      join(
-        process.cwd(),
-        `public/title/${titleType}/${titleId}/${hoppersPath}/${locale}/matchmaking_hopper_descriptions_003.bin`,
-      ),
+    return await this.sendLocalFile(
+      `${titleType}/${titleId}/${hoppersPath}/${locale}/matchmaking_hopper_descriptions_003.bin`,
+      res,
     );
-    return new StreamableFile(file);
   }
 
   @Get('/:hoppersPath/:locale/matchmaking_banhammer_messages.bin')
@@ -345,14 +316,12 @@ export class TitleStorageController {
     @Param('titleId') titleId: string,
     @Param('hoppersPath') hoppersPath: string,
     @Param('locale') locale: string,
+    @Res({ passthrough: true }) res: Response,
   ) {
-    const file = createReadStream(
-      join(
-        process.cwd(),
-        `public/title/${titleType}/${titleId}/${hoppersPath}/${locale}/matchmaking_banhammer_messages.bin`,
-      ),
+    return await this.sendLocalFile(
+      `${titleType}/${titleId}/${hoppersPath}/${locale}/matchmaking_banhammer_messages.bin`,
+      res,
     );
-    return new StreamableFile(file);
   }
 
   @Get('/:hoppersPath/:hopperId/game_set_006.bin')
@@ -365,14 +334,12 @@ export class TitleStorageController {
     @Param('titleId') titleId: string,
     @Param('hoppersPath') hoppersPath: string,
     @Param('hopperId') hopperId: string,
+    @Res({ passthrough: true }) res: Response,
   ) {
-    const file = createReadStream(
-      join(
-        process.cwd(),
-        `public/title/${titleType}/${titleId}/${hoppersPath}/${hopperId}/game_set_006.bin`,
-      ),
+    return await this.sendLocalFile(
+      `${titleType}/${titleId}/${hoppersPath}/${hopperId}/game_set_006.bin`,
+      res,
     );
-    return new StreamableFile(file);
   }
 
   @Get('/:hoppersPath/:hopperId/:variantName.bin')
@@ -387,14 +354,12 @@ export class TitleStorageController {
     @Param('hoppersPath') hoppersPath: string,
     @Param('hopperId') hopperId: string,
     @Param('variantName') variantName: string,
+    @Res({ passthrough: true }) res: Response,
   ) {
-    const file = createReadStream(
-      join(
-        process.cwd(),
-        `public/title/${titleType}/${titleId}/${hoppersPath}/${hopperId}/${variantName}_010.bin`,
-      ),
+    return await this.sendLocalFile(
+      `${titleType}/${titleId}/${hoppersPath}/${hopperId}/${variantName}.bin`,
+      res,
     );
-    return new StreamableFile(file);
   }
 
   @Get('/:hoppersPath/:hopperId/map_variants/:variantName.bin')
@@ -409,17 +374,15 @@ export class TitleStorageController {
     @Param('hoppersPath') hoppersPath: string,
     @Param('hopperId') hopperId: string,
     @Param('variantName') variantName: string,
+    @Res({ passthrough: true }) res: Response,
   ) {
-    const file = createReadStream(
-      join(
-        process.cwd(),
-        `public/title/${titleType}/${titleId}/${hoppersPath}/${hopperId}/map_variants/${variantName}.bin`,
-      ),
+    return await this.sendLocalFile(
+      `${titleType}/${titleId}/${hoppersPath}/${hopperId}/map_variants/${variantName}.bin`,
+      res,
     );
-    return new StreamableFile(file);
   }
 
-  @Get('/:hoppersPath/:hopperId/:locale/dynamic_matchmaking_histogram_01.jpeg')
+  @Get('/:hoppersPath/:hopperId/:locale/dynamic_matchmaking_histogram_01.jpg')
   @ApiParam({ name: 'titleType', example: 'tracked' })
   @ApiParam({ name: 'titleId', example: '12070' })
   @ApiParam({ name: 'hoppersPath', example: 'default_hoppers' })
@@ -432,13 +395,23 @@ export class TitleStorageController {
     @Param('hoppersPath') hoppersPath: string,
     @Param('hopperId') hopperId: string,
     @Param('locale') locale: string,
+    @Res({ passthrough: true }) res: Response,
   ) {
-    const file = createReadStream(
-      join(
-        process.cwd(),
-        `public/title/${titleType}/${titleId}/${hoppersPath}/${hopperId}/${locale}/dynamic_matchmaking_histogram_01.jpg`,
-      ),
+    return await this.sendLocalFile(
+      `${titleType}/${titleId}/${hoppersPath}/${hopperId}/${locale}/dynamic_matchmaking_histogram_01.jpg`,
+      res,
     );
-    return new StreamableFile(file);
+  }
+
+  private async sendLocalFile(path: string, res: Response) {
+    path = join(process.cwd(), `public/storage/title/`, path);
+
+    const stats = await stat(path);
+
+    if (!stats.isFile()) throw new NotFoundException();
+
+    res.set('Content-Length', stats.size.toString());
+    res.set('Cache-Control', 'no-cache');
+    return new StreamableFile(createReadStream(path));
   }
 }

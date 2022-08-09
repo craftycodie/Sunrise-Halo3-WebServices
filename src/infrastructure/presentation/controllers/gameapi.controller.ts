@@ -1,4 +1,13 @@
-import { Controller, Get, Inject, Post, Query } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Header,
+  Inject,
+  Post,
+  Query,
+  UploadedFile,
+  UseInterceptors,
+} from '@nestjs/common';
 import ILogger, { ILoggerSymbol } from '../../../ILogger';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { GetFileshareQuery } from 'src/application/queries/GetFileshareQuery';
@@ -6,14 +15,20 @@ import UserID from 'src/domain/value-objects/UserId';
 import ShareID from 'src/domain/value-objects/ShareId';
 import Locale from 'src/domain/value-objects/Locale';
 import { ApiQuery, ApiTags } from '@nestjs/swagger';
+import { Response } from 'express';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { writeFile } from 'fs/promises';
+import { join } from 'path';
+import { cwd } from 'process';
 
 const mapFileshareToResponse = (fileshare) => {
-  return `QuoteBytes: ${fileshare.quotaBytes}
+  return `QuotaBytes: ${fileshare.quotaBytes}
 QuotaSlots: ${fileshare.quotaSlots}
 SlotCount: ${fileshare.slotCount}
 VisibleSlots: ${fileshare.visibleSlots}
 SubscriptionHash: ${fileshare.subscriptionHash}
-Message: ${fileshare.message}`;
+Message: ${fileshare.message}
+`;
 };
 
 @ApiTags('Game API')
@@ -49,12 +64,52 @@ export class GameApiController {
   }
 
   @Get('/FilesNewUpload.ashx')
-  async startFileUpload() {
-    return;
+  async startFileUpload(
+    @Query('title') titleID,
+    @Query('userId') userID,
+    @Query('shareId') shareID,
+    @Query('slot') slot,
+    @Query('uniqueId') uniqueID,
+    @Query('fileType') fileType,
+    @Query('uncompressedSize') uncompressedSize,
+    @Query('compressedSize') compressedSize,
+  ) {
+    const serverId = 1;
+    return serverId;
+  }
+
+  @Get('/FilesGetUploadProgress.ashx')
+  async getUploadProgress(
+    @Query('title') titleID,
+    @Query('userId') userID,
+    @Query('shareId') shareID,
+    @Query('slot') slot,
+    @Query('serverId') serverId,
+  ) {
+    const progress = 50;
+    return progress;
+  }
+
+  @Get('/UserGetBnetSubscription.ashx')
+  @ApiQuery({ name: 'titleId', type: 'number' })
+  @ApiQuery({ name: 'userId' })
+  @ApiQuery({ name: 'locale' })
+  async getBnetSubscription(
+    @Query('titleId') titleID,
+    @Query('userId') userID,
+    @Query('locale') locale,
+  ) {
+    return 'Status: Subscribed';
   }
 
   @Post('/FilesUpload.ashx')
-  async uploadFile() {
+  @UseInterceptors(FileInterceptor('upload'))
+  async uploadFile(@UploadedFile() upload: Express.Multer.File) {
+    console.log(upload);
+    await writeFile(
+      join(process.cwd(), 'uploads/fileshare', upload.originalname),
+      upload.buffer,
+    );
     return;
   }
 
@@ -70,7 +125,7 @@ export class GameApiController {
   async userUpdatePlayerStats(
     @Query('title') titleID,
     @Query('userId') userID,
-    @Query('highestSkill') highestSkil,
+    @Query('highestSkill') highestSkill,
   ) {
     return;
   }
