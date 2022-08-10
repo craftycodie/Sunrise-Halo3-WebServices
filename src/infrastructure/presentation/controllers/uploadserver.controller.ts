@@ -1,10 +1,8 @@
 import {
+  BadRequestException,
   Controller,
-  Get,
-  Headers,
   Inject,
   Post,
-  Query,
   UploadedFile,
   UseInterceptors,
 } from '@nestjs/common';
@@ -14,6 +12,7 @@ import { ApiTags } from '@nestjs/swagger';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { writeFile } from 'fs/promises';
 import { join } from 'path';
+import { inflate } from 'pako';
 
 @ApiTags('Upload Server')
 @Controller('/upload_server')
@@ -27,28 +26,20 @@ export class UploadServerController {
   @Post('/stats.ashx')
   @UseInterceptors(FileInterceptor('upload'))
   async uploadStats(@UploadedFile() upload: Express.Multer.File) {
-    console.log(upload);
-    if (upload.mimetype === 'application/x-halo3-multi') {
-      await writeFile(
-        join(
-          process.cwd(),
-          'uploads/webstats',
-          upload.originalname + '_' + new Date().getTime().toString(),
-        ),
-        upload.buffer,
-      );
-    }
+    if (!upload.mimetype.startsWith('application/x-halo3-'))
+      throw new BadRequestException(`Unrecognized file!`);
 
-    if (upload.mimetype === 'application/x-halo3-qos') {
-      await writeFile(
-        join(
-          process.cwd(),
-          'uploads/qos',
-          upload.originalname + '_' + new Date().getTime().toString(),
-        ),
-        upload.buffer,
-      );
-    }
+    const filetype = upload.mimetype.replace('application/x-halo3-', '');
+
+    await writeFile(
+      join(
+        process.cwd(),
+        'uploads',
+        filetype,
+        upload.originalname + '_' + new Date().getTime().toString(),
+      ),
+      inflate(upload.buffer.subarray(12)),
+    );
 
     return;
   }
