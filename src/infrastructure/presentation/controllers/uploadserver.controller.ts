@@ -47,7 +47,6 @@ export class UploadServerController {
   @Post('/upload.ashx')
   @UseInterceptors(FileInterceptor('upload'))
   async uploadDump(@UploadedFile() upload: Express.Multer.File) {
-    console.log(upload);
     await writeFile(
       join(process.cwd(), 'uploads/crashes', upload.originalname),
       upload.buffer,

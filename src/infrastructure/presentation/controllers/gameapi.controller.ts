@@ -114,7 +114,10 @@ export class GameApiController {
   }
 
   @Post('/MachineUpdateNetworkStats.ashx')
-  async machineUpdateNetworkStats() {
+  async machineUpdateNetworkStats(
+    @Query('title') titleID,
+    @Query('machineId') machineID
+  ) {
     return;
   }
 
