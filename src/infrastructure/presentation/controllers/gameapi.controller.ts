@@ -20,6 +20,7 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { writeFile } from 'fs/promises';
 import { join } from 'path';
 import { cwd } from 'process';
+import { readContentHeader } from '../blf/ContentHeader';
 
 const mapFileshareToResponse = (fileshare) => {
   return `QuotaBytes: ${fileshare.quotaBytes}
@@ -106,6 +107,10 @@ export class GameApiController {
   @UseInterceptors(FileInterceptor('upload'))
   async uploadFile(@UploadedFile() upload: Express.Multer.File) {
     console.log(upload);
+
+    const contentHeader = readContentHeader(upload.buffer.slice(0x3c, 0x138));
+    console.log(contentHeader);
+
     await writeFile(
       join(process.cwd(), 'uploads/fileshare', upload.originalname),
       upload.buffer,
@@ -113,15 +118,33 @@ export class GameApiController {
     return;
   }
 
+  // Screenshots are uploaded when they are taken apparently.
   @Post('/FilesUploadBlind.ashx')
   @UseInterceptors(FileInterceptor('upload'))
   async uploadFileBlind(@UploadedFile() upload: Express.Multer.File) {
     console.log(upload);
-    await writeFile(
-      join(process.cwd(), 'uploads/fileshare', upload.originalname),
-      upload.buffer,
-    );
-    return;
+    if (upload.originalname == 'screen.blf') {
+      await writeFile(
+        join(process.cwd(), 'uploads', upload.originalname),
+        upload.buffer,
+      );
+
+      await writeFile(
+        join(
+          process.cwd(),
+          'uploads/screenshots',
+          'screenshot_' + new Date().getTime().toString(),
+        ),
+        upload.buffer,
+      );
+      return;
+    } else {
+      await writeFile(
+        join(process.cwd(), 'uploads/fileshare', upload.originalname),
+        upload.buffer,
+      );
+      return;
+    }
   }
 
   @Post('/FilesResumeDownload.ashx')

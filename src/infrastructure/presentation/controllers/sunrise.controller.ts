@@ -29,7 +29,7 @@ export class SunriseController {
 
   @Get('/screenshots')
   async screenshots(@Res({ passthrough: true }) res: Response) {
-    const path = join(process.cwd(), `uploads/fileshare`);
+    const path = join(process.cwd(), `uploads/screenshots`);
     const files = await readdir(path);
 
     return `
@@ -37,7 +37,8 @@ export class SunriseController {
     <body>
         <h1>Sunrise Screenshots</h1>
         ${files.map(
-          (file) => `<img onerror="this.style.display='none'" height="450" src="/sunrise/screenshot/${file}"/>`,
+          (file) =>
+            `<img onerror="this.style.display='none'" height="450" src="/sunrise/screenshot/${file}"/>`,
         )}
     </body>
 </html>
@@ -53,7 +54,7 @@ export class SunriseController {
     );
   }
 
-  @Get('/screenshot/:filename')
+  @Get('/files/:filename')
   @Header('Content-Type', 'image/jpeg')
   async test(
     @Res({ passthrough: true }) res: Response,
@@ -86,5 +87,33 @@ export class SunriseController {
     res.set('Content-Length', stats.size.toString());
     res.set('Cache-Control', 'no-cache');
     return new StreamableFile(uncompressedBuffer);
+  }
+
+  @Get('/screenshot/:filename')
+  @Header('Content-Type', 'image/jpeg')
+  async screenshot(
+    @Res({ passthrough: true }) res: Response,
+    @Param('filename') filename: string,
+  ) {
+    const path = join(process.cwd(), `uploads/screenshots`, filename);
+
+    const stats = await stat(path);
+
+    if (!stats.isFile()) throw new NotFoundException();
+
+    let screenshotBuffer = await readFile(path);
+
+    const fileType = this.swap32(
+      new Uint32Array(screenshotBuffer.buffer.slice(0xf8, 0xfc))[0],
+    );
+
+    if (fileType != 13)
+      throw new BadRequestException('The provided file is not a screenshot.');
+
+    screenshotBuffer = Buffer.from(screenshotBuffer.buffer.slice(0x2b8, -11));
+
+    res.set('Content-Length', stats.size.toString());
+    res.set('Cache-Control', 'no-cache');
+    return new StreamableFile(screenshotBuffer);
   }
 }
