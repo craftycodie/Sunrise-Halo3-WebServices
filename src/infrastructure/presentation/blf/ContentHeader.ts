@@ -1,26 +1,5 @@
-export default interface ContentHeader {
-  buildNumber: number;
-  mapVersion: number;
-  uniqueId: bigint;
-  filename: string;
-  description: string;
-  author: string;
-  filetype: number;
-  authorXuidIsOnline: boolean;
-  authorXuid: bigint;
-  size: bigint;
-  date: bigint;
-  lengthSeconds: number;
-  campaignId: number;
-  mapId: number;
-  gameEngineType: number;
-  campaignDifficulty: number;
-  hopperId: number;
-  gameId: bigint;
-}
-
 function readLong(arrayBuffer: ArrayBuffer) {
-  return BigInt('0x' + Buffer.from(arrayBuffer).toString('hex'));
+  return BigInt('0x' + Buffer.from(arrayBuffer).toString('hex')).toString();
 }
 
 function readNumber(arrayBuffer: ArrayBuffer) {

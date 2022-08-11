@@ -1,7 +1,10 @@
 import {
+  BadRequestException,
+  Body,
   Controller,
   Get,
   Header,
+  Headers,
   Inject,
   Post,
   Query,
@@ -21,16 +24,68 @@ import { writeFile } from 'fs/promises';
 import { join } from 'path';
 import { cwd } from 'process';
 import { readContentHeader } from '../blf/ContentHeader';
+import FileShare from 'src/domain/aggregates/FileShare';
+import { CreateFileShareCommand } from 'src/application/commands/CreateFileShareCommand';
+import { UploadFileCommand } from 'src/application/commands/UploadFileCommand';
+import SlotNumber from 'src/domain/value-objects/SlotNumber';
+import FileShareSlot from 'src/domain/entities/FileShareSlot';
+import { DeleteFileCommand } from 'src/application/commands/DeleteFileCommand';
 
-const mapFileshareToResponse = (fileshare) => {
+const mapFileshareToResponse = (fileshare: FileShare) => {
   return `QuotaBytes: ${fileshare.quotaBytes}
 QuotaSlots: ${fileshare.quotaSlots}
-SlotCount: ${fileshare.slotCount}
+SlotCount: ${fileshare.slots.length}
 VisibleSlots: ${fileshare.visibleSlots}
 SubscriptionHash: ${fileshare.subscriptionHash}
-Message: ${fileshare.message}
+Message: ${fileshare.message ? fileshare.message : ''}
+${fileshare.slots.map((slot) => mapFileShareSlotToResponse(slot))}
 `;
 };
+
+const getFileTypeString = (fileType: number) => {
+  return 'MapVariant';
+};
+
+const mapFileShareSlotToResponse = (fileshareSlot: FileShareSlot) => {
+  return `StartSlot: ${fileshareSlot.slotNumber.value}
+  Guid: fake
+  State: Ready
+  Name: ${fileshareSlot.header.filename}
+  Description: ${fileshareSlot.header.description}
+  Author: ${fileshareSlot.header.author}
+  AuthorXuid: ${fileshareSlot.header.authorXuid}
+  AuthorXuidIsOnline: ${fileshareSlot.header.authorXuidIsOnline ? '1' : '0'}
+  SizeBytes: 2
+  FileType: ${getFileTypeString(fileshareSlot.header.filetype)}
+  SecondsPast19700101: ${fileshareSlot.header.date}
+  LengthSeconds: ${fileshareSlot.header.lengthSeconds}
+  CampaignID: ${fileshareSlot.header.campaignId}
+  MapID: ${fileshareSlot.header.mapId}
+  GameEngineType: ${fileshareSlot.header.gameEngineType}
+  CampaignDifficulty: ${fileshareSlot.header.campaignDifficulty}
+  GameID: ${fileshareSlot.header.gameId}
+EndSlot
+`;
+};
+
+// Guid: fake
+// State: Ready
+// Name: MLG Cons TS 8
+// Description: The 'MLG Gametypes' gamertag is the only source for the official Major League Gaming gametypes for
+// Author: MLG Gametypes
+// AuthorXuid: 1
+// AuthorXuidIsOnline: 1
+// CampaignInsertionPoint: 0
+// SizeBytes: 56500
+// FileType: MapVariant
+// SecondsPast19700101: 1175289035
+// LengthSeconds: 60
+// CampaignID: -1
+// MapID: 300
+// GameEngineType: 2
+// CampaignDifficulty: 0
+// CampaignSurvivalEnabled: 0
+// GameID: 1
 
 @ApiTags('Game API')
 @Controller('/gameapi')
@@ -42,17 +97,17 @@ export class GameApiController {
   ) {}
 
   @Get('/FilesGetCatalog.ashx')
-  @ApiQuery({ name: 'titleId', type: 'number' })
+  @ApiQuery({ name: 'title', type: 'number' })
   @ApiQuery({ name: 'shareId' })
   @ApiQuery({ name: 'userId' })
   @ApiQuery({ name: 'locale' })
   async getFileshare(
-    @Query('titleId') titleID,
+    @Query('title') titleID,
     @Query('shareId') shareID,
     @Query('userId') userID,
     @Query('locale') locale,
   ) {
-    const fileshare = await this.queryBus.execute(
+    let fileshare = await this.queryBus.execute(
       new GetFileshareQuery(
         parseInt(titleID),
         new UserID(userID),
@@ -60,6 +115,19 @@ export class GameApiController {
         new Locale(locale),
       ),
     );
+
+    console.log({ fileshare });
+
+    if (!fileshare)
+      fileshare = await this.commandBus.execute(
+        new CreateFileShareCommand(
+          parseInt(titleID),
+          new UserID(userID),
+          new ShareID(shareID),
+        ),
+      );
+
+    console.log(mapFileshareToResponse(fileshare));
 
     return mapFileshareToResponse(fileshare);
   }
@@ -105,16 +173,32 @@ export class GameApiController {
 
   @Post('/FilesUpload.ashx')
   @UseInterceptors(FileInterceptor('upload'))
-  async uploadFile(@UploadedFile() upload: Express.Multer.File) {
+  async uploadFile(
+    @UploadedFile() upload: Express.Multer.File,
+    @Headers('title') titleID,
+    @Headers('userid') userid,
+    @Headers('shareid') shareID,
+    @Headers('slot') slot,
+    @Headers('serverid') serverId,
+  ) {
     console.log(upload);
 
     const contentHeader = readContentHeader(upload.buffer.slice(0x3c, 0x138));
     console.log(contentHeader);
 
-    await writeFile(
-      join(process.cwd(), 'uploads/fileshare', upload.originalname),
-      upload.buffer,
+    if (Buffer.from(upload.buffer.slice(0x0, 0x4)).toString() != '_blf')
+      throw new BadRequestException('Invalid file.')
+
+    await this.commandBus.execute(
+      new UploadFileCommand(
+        new UserID(userid.replace('"', '').replace('"', '')),
+        new ShareID(shareID.replace('"', '').replace('"', '')),
+        new SlotNumber(slot.replace('"', '').replace('"', '')),
+        contentHeader,
+        upload.buffer,
+      ),
     );
+
     return;
   }
 
@@ -152,7 +236,7 @@ export class GameApiController {
     return;
   }
 
-  @Post('/FilesStageForDownload.ashx')
+  @Get('/FilesStageForDownload.ashx')
   async stageFileDownload(
     @Query('titleId') titleID,
     @Query('userId') userID,
@@ -163,7 +247,7 @@ export class GameApiController {
     return;
   }
 
-  @Post('/FilesDelete.ashx')
+  @Get('/FilesDelete.ashx')
   async deleteFile(
     @Query('titleId') titleID,
     @Query('userId') userID,
@@ -171,7 +255,7 @@ export class GameApiController {
     @Query('slot') slot,
     @Query('serverId') serverId,
   ) {
-    return;
+    return await this.commandBus.execute(new DeleteFileCommand(new UserID(userID), new ShareID(shareID), new SlotNumber(slot)));
   }
 
   @Post('/MachineUpdateNetworkStats.ashx')

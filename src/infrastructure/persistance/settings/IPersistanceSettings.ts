@@ -1,9 +1,5 @@
 export interface PersistanceSettingsProps {
-  host: string;
-  user: string;
-  password: string;
-  database: string;
-  port: number;
+  mongoURI: string;
 }
 
 export default interface IPersistanceSettings {
