@@ -113,10 +113,48 @@ export class GameApiController {
     return;
   }
 
+  @Post('/FilesUploadBlind.ashx')
+  @UseInterceptors(FileInterceptor('upload'))
+  async uploadFileBlind(@UploadedFile() upload: Express.Multer.File) {
+    console.log(upload);
+    await writeFile(
+      join(process.cwd(), 'uploads/fileshare', upload.originalname),
+      upload.buffer,
+    );
+    return;
+  }
+
+  @Post('/FilesResumeDownload.ashx')
+  async downloadFile() {
+    return;
+  }
+
+  @Post('/FilesStageForDownload.ashx')
+  async stageFileDownload(
+    @Query('titleId') titleID,
+    @Query('userId') userID,
+    @Query('shareId') shareID,
+    @Query('slot') slot,
+    @Query('serverId') serverId,
+  ) {
+    return;
+  }
+
+  @Post('/FilesDelete.ashx')
+  async deleteFile(
+    @Query('titleId') titleID,
+    @Query('userId') userID,
+    @Query('shareId') shareID,
+    @Query('slot') slot,
+    @Query('serverId') serverId,
+  ) {
+    return;
+  }
+
   @Post('/MachineUpdateNetworkStats.ashx')
   async machineUpdateNetworkStats(
     @Query('title') titleID,
-    @Query('machineId') machineID
+    @Query('machineId') machineID,
   ) {
     return;
   }
@@ -129,6 +167,30 @@ export class GameApiController {
     @Query('title') titleID,
     @Query('userId') userID,
     @Query('highestSkill') highestSkill,
+  ) {
+    return;
+  }
+
+  @Get('/UserBeginConsume.ashx')
+  @ApiQuery({ name: 'title', type: 'number' })
+  @ApiQuery({ name: 'userId' })
+  @ApiQuery({ name: 'consumableId' })
+  async userBeginConsume(
+    @Query('title') titleID,
+    @Query('userId') userID,
+    @Query('consumableId') highestSkill,
+  ) {
+    return;
+  }
+
+  @Get('/UserCompleteConsume.ashx')
+  @ApiQuery({ name: 'title', type: 'number' })
+  @ApiQuery({ name: 'userId' })
+  @ApiQuery({ name: 'consumableId' })
+  async userCompleteConsume(
+    @Query('title') titleID,
+    @Query('userId') userID,
+    @Query('consumableId') highestSkill,
   ) {
     return;
   }

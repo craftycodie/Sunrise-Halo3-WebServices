@@ -3,6 +3,7 @@ import { CqrsModule } from '@nestjs/cqrs';
 import { AppLoggerMiddleware } from './AppLoggerMiddleware';
 import { GameApiController } from './controllers/gameapi.controller';
 import { MachineStorageController } from './controllers/machinestorage.controller';
+import { SunriseController } from './controllers/sunrise.controller';
 import { TitleStorageController } from './controllers/titlestorage.controller';
 import { UploadServerController } from './controllers/uploadserver.controller';
 import { UserStorageController } from './controllers/userstorage.controller';
@@ -15,6 +16,7 @@ import { UserStorageController } from './controllers/userstorage.controller';
     UserStorageController,
     MachineStorageController,
     UploadServerController,
+    SunriseController,
   ],
   providers: [],
 })
