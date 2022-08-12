@@ -8,6 +8,6 @@ export class GetFileshareQuery {
     public readonly title: GameID,
     public readonly userID: UserID,
     public readonly shareID: ShareID,
-    public readonly locale: Locale,
+    public readonly locale?: Locale,
   ) {}
 }

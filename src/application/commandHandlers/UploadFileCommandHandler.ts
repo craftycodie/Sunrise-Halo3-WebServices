@@ -1,4 +1,5 @@
 import { Inject } from '@nestjs/common';
+import { ContextIdFactory } from '@nestjs/core';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import FileShare from 'src/domain/aggregates/FileShare';
 import FileShareSlot from 'src/domain/entities/FileShareSlot';
@@ -25,7 +26,7 @@ export class UploadFileCommandHandler
       FileShareSlot.create({
         slotNumber: command.slot,
         header: command.header,
-        uniqueId: new UniqueID(''),
+        uniqueId: new UniqueID(command.header.uniqueId),
         data: command.file,
       }),
     );

@@ -8,8 +8,6 @@ export type FileShareDocument = FileShare & Document;
 export class FileShare {
   @Prop({ required: true })
   id: string;
-  @Prop({ required: true })
-  userID: string;
   message: string;
   @Prop({ required: true })
   quotaBytes: number;

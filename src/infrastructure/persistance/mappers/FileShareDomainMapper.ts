@@ -16,22 +16,18 @@ export default class FileShareDomainMapper {
 
   public mapToDomainModel(
     fileShare: FileShareModel,
-    files: (FileModel | undefined)[],
+    files: FileModel[],
   ): FileShare {
-    const mappedFiles: FileShareSlot[] = files.map((file) =>
-      file == undefined
-        ? undefined
-        : new FileShareSlot({
-            uniqueId: new UniqueID(file.uniqueId),
-            slotNumber: new SlotNumber(file.slotNumber),
-            data: file.data,
-            header: file.header,
-          }),
+    const mappedFiles: FileShareSlot[] = files.map((file) => new FileShareSlot({
+        uniqueId: new UniqueID(file.uniqueId),
+        slotNumber: new SlotNumber(file.slotNumber),
+        data: file.data,
+        header: file.header,
+      }),
     );
 
     const aggregateAlbum = new FileShare({
       id: new ShareID(fileShare.id),
-      userID: new UserID(fileShare.userID),
       message: fileShare.message,
       visibleSlots: fileShare.visibleSlots,
       quotaBytes: fileShare.quotaBytes,

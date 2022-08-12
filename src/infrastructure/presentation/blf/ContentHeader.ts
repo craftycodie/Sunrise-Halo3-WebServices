@@ -1,3 +1,5 @@
+import ContentHeader from "src/domain/value-objects/ContentHeader";
+
 function readLong(arrayBuffer: ArrayBuffer) {
   return BigInt('0x' + Buffer.from(arrayBuffer).toString('hex')).toString();
 }
@@ -6,7 +8,7 @@ function readNumber(arrayBuffer: ArrayBuffer) {
   return Number('0x' + Buffer.from(arrayBuffer).toString('hex'));
 }
 
-export function readContentHeader(arrayBuffer: ArrayBuffer) {
+export function readContentHeader(arrayBuffer: ArrayBuffer): ContentHeader {
   if (arrayBuffer.byteLength < 0xf8)
     throw new Error('Not enough bytes for content header');
 
@@ -27,7 +29,7 @@ export function readContentHeader(arrayBuffer: ArrayBuffer) {
     filetype: readNumber(arrayBuffer.slice(0xbc, 0xc0)),
     authorXuidIsOnline: arrayBuffer[0xc0] > 0,
     authorXuid: readLong(arrayBuffer.slice(0xc4, 0xcc)),
-    size: readLong(arrayBuffer.slice(0xcc, 0xdc)),
+    size: 0, //something is wrong with this -> readLong(arrayBuffer.slice(0xcc, 0xdc)),
     date: readLong(arrayBuffer.slice(0xd4, 0xdc)),
     lengthSeconds: readNumber(arrayBuffer.slice(0xdc, 0xe0)),
     campaignId: readNumber(arrayBuffer.slice(0xe0, 0xe4)),

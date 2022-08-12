@@ -6,7 +6,6 @@ import UserID from '../value-objects/UserId';
 
 interface FileShareProps {
   id: ShareID;
-  userID: UserID;
   slots: FileShareSlot[];
   message?: string;
   quotaBytes: number;
@@ -22,7 +21,6 @@ export default class FileShare implements FileShareProps {
 
   // TODO: Give these private setters.
   id: ShareID;
-  userID: UserID;
   slots: FileShareSlot[];
   message?: string;
   quotaBytes: number;
@@ -41,8 +39,12 @@ export default class FileShare implements FileShareProps {
     );
   }
 
+  getSlot(getSlotNumber: SlotNumber): FileShareSlot {
+    return this.slots.find((slot) => slot.slotNumber == getSlotNumber);
+  }
+
   getFileData(getSlotNumber: SlotNumber): Buffer {
-    return this.slots.find((slot) => slot.slotNumber == getSlotNumber).data;
+    return this.slots.find((slot) => slot.slotNumber.value == getSlotNumber.value).data;
   }
 
   public static create(props: FileShareProps): FileShare {

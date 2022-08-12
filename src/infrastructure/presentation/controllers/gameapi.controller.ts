@@ -8,6 +8,7 @@ import {
   Inject,
   Post,
   Query,
+  StreamableFile,
   UploadedFile,
   UseInterceptors,
 } from '@nestjs/common';
@@ -43,7 +44,18 @@ ${fileshare.slots.map((slot) => mapFileShareSlotToResponse(slot))}
 };
 
 const getFileTypeString = (fileType: number) => {
-  return 'MapVariant';
+  switch (fileType) {
+    case 2:
+      return 'GameVariantSlayer';
+    case 9:
+      return 'GameVariantVIP';
+    case 11:
+      return 'Film';
+    case 13:
+      return 'Screenshot';
+    default:
+      return 'MapVariant';
+  }
 };
 
 const mapFileShareSlotToResponse = (fileshareSlot: FileShareSlot) => {
@@ -55,7 +67,7 @@ const mapFileShareSlotToResponse = (fileshareSlot: FileShareSlot) => {
   Author: ${fileshareSlot.header.author}
   AuthorXuid: ${fileshareSlot.header.authorXuid}
   AuthorXuidIsOnline: ${fileshareSlot.header.authorXuidIsOnline ? '1' : '0'}
-  SizeBytes: 2
+  SizeBytes: ${fileshareSlot.header.size}
   FileType: ${getFileTypeString(fileshareSlot.header.filetype)}
   SecondsPast19700101: ${fileshareSlot.header.date}
   LengthSeconds: ${fileshareSlot.header.lengthSeconds}
@@ -67,25 +79,6 @@ const mapFileShareSlotToResponse = (fileshareSlot: FileShareSlot) => {
 EndSlot
 `;
 };
-
-// Guid: fake
-// State: Ready
-// Name: MLG Cons TS 8
-// Description: The 'MLG Gametypes' gamertag is the only source for the official Major League Gaming gametypes for
-// Author: MLG Gametypes
-// AuthorXuid: 1
-// AuthorXuidIsOnline: 1
-// CampaignInsertionPoint: 0
-// SizeBytes: 56500
-// FileType: MapVariant
-// SecondsPast19700101: 1175289035
-// LengthSeconds: 60
-// CampaignID: -1
-// MapID: 300
-// GameEngineType: 2
-// CampaignDifficulty: 0
-// CampaignSurvivalEnabled: 0
-// GameID: 1
 
 @ApiTags('Game API')
 @Controller('/gameapi')
@@ -116,8 +109,6 @@ export class GameApiController {
       ),
     );
 
-    console.log({ fileshare });
-
     if (!fileshare)
       fileshare = await this.commandBus.execute(
         new CreateFileShareCommand(
@@ -126,8 +117,6 @@ export class GameApiController {
           new ShareID(shareID),
         ),
       );
-
-    console.log(mapFileshareToResponse(fileshare));
 
     return mapFileshareToResponse(fileshare);
   }
@@ -155,8 +144,10 @@ export class GameApiController {
     @Query('slot') slot,
     @Query('serverId') serverId,
   ) {
-    const progress = 50;
-    return progress;
+    const fileShare: FileShare = await this.queryBus.execute(
+      new GetFileshareQuery(titleID, new UserID(userID), new ShareID(shareID),
+    ));
+    return fileShare.getSlot(new SlotNumber(slot)).header.size;
   }
 
   @Get('/UserGetBnetSubscription.ashx')
@@ -181,32 +172,42 @@ export class GameApiController {
     @Headers('slot') slot,
     @Headers('serverid') serverId,
   ) {
-    console.log(upload);
-
     const contentHeader = readContentHeader(upload.buffer.slice(0x3c, 0x138));
-    console.log(contentHeader);
+
+    contentHeader.size = upload.size;
 
     if (Buffer.from(upload.buffer.slice(0x0, 0x4)).toString() != '_blf')
-      throw new BadRequestException('Invalid file.')
+      throw new BadRequestException('Invalid file.');
 
     await this.commandBus.execute(
       new UploadFileCommand(
         new UserID(userid.replace('"', '').replace('"', '')),
         new ShareID(shareID.replace('"', '').replace('"', '')),
-        new SlotNumber(slot.replace('"', '').replace('"', '')),
+        new SlotNumber(parseInt(slot.replace('"', '').replace('"', ''))),
         contentHeader,
         upload.buffer,
       ),
     );
 
-    return;
+    return 0;
+  }
+  @Get('/FilesDownload.ashx')
+  async downloadFile(
+    @Headers('title') titleID,
+    @Query('userId') userid,
+    @Query('shareId') shareID,
+    @Query('slot') slot,
+    @Query('serverid') serverId,
+  ) {
+    const fileshare : FileShare = await this.queryBus.execute(new GetFileshareQuery(1, new UserID(userid), new ShareID(shareID)));
+
+    return new StreamableFile(fileshare.getFileData(new SlotNumber(slot)));
   }
 
   // Screenshots are uploaded when they are taken apparently.
   @Post('/FilesUploadBlind.ashx')
   @UseInterceptors(FileInterceptor('upload'))
   async uploadFileBlind(@UploadedFile() upload: Express.Multer.File) {
-    console.log(upload);
     if (upload.originalname == 'screen.blf') {
       await writeFile(
         join(process.cwd(), 'uploads', upload.originalname),
@@ -232,7 +233,7 @@ export class GameApiController {
   }
 
   @Post('/FilesResumeDownload.ashx')
-  async downloadFile() {
+  async resumeDownloadFile() {
     return;
   }
 
@@ -243,8 +244,13 @@ export class GameApiController {
     @Query('shareId') shareID,
     @Query('slot') slot,
     @Query('serverId') serverId,
+    @Query('startPosition') startPosition,
+    @Query('fromAutoQueue') fromAutoQueue,
+    @Query('view') view,
   ) {
-    return;
+    return `Size: 1
+FullSize: 1
+InitialUrl: /gameapi/FilesDownload.ashx?userId=${userID}&shareId=${shareID}&slot=${slot}`;
   }
 
   @Get('/FilesDelete.ashx')

@@ -19,12 +19,11 @@ export class CreateFileShareCommandHandler
     return this.repository.save(
       FileShare.create({
         id: command.shareID,
-        userID: command.userID,
         slots: [],
         quotaBytes: 99999,
         quotaSlots: 20,
         visibleSlots: 20,
-        subscriptionHash: 'CODIE',
+        subscriptionHash: 'SUNRISE_BETA',
       }),
     );
   }

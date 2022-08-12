@@ -8,7 +8,7 @@ export default interface ContentHeader {
   filetype: number;
   authorXuidIsOnline: boolean;
   authorXuid: string;
-  size: string;
+  size: number;
   date: string;
   lengthSeconds: number;
   campaignId: number;

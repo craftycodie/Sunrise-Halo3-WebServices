@@ -39,14 +39,22 @@ export default class FileShareRepository implements IFileShareRepository {
 
     for (let i = 0; i < persistanceFiles.length; i++) {
       const file = persistanceFiles[i];
+      console.log(file);
+
+      const updatedFile = await this.fileShareSlotModel.findOneAndUpdate(
+        { shareID: target.id.value },
+        file,
+        { upsert: true },
+      );
+
+      console.log(updatedFile)
+
       files.push(
-        await this.fileShareSlotModel.findOneAndUpdate(
-          { shareID: target.id.value },
-          file,
-          { upsert: true },
-        ),
+        updatedFile
       );
     }
+
+    console.log(files.map((file) => ({ uniqueId: file.uniqueId, slot: file.slotNumber})));
 
     await this.fileShareSlotModel.deleteMany({ uniqueId: { $nin: persistanceFiles.map(file => file.uniqueId) } })
 
@@ -56,7 +64,7 @@ export default class FileShareRepository implements IFileShareRepository {
   public async find(id: ShareID) {
     const fileShare = await this.fileShareModel.findOne({ id: id.value });
     if (!fileShare) return;
-    const files = await this.fileShareSlotModel.find({ shareId: id });
+    const files = await this.fileShareSlotModel.find({ shareId: id.value });
     return this.fileShareDomainMapper.mapToDomainModel(fileShare, files);
   }
 }
