@@ -36,7 +36,10 @@ export class UserStorageController {
     //   res,
     // );
 
-    return await this.sendLocalFile(`codie.bin`, res);
+    if (xuid === '000901FC3FB8FE71')
+      return await this.sendLocalFile(`codie.bin`, res);
+
+    return await this.sendLocalFile(`user.bin`, res);
   }
 
   @Get('/:unk1/:unk2/:unk3/:xuid/recent_players.bin')
