@@ -10,6 +10,9 @@ export class Screenshot {
   id: string;
 
   @Prop({ required: true })
+  uniqueId: string;
+
+  @Prop({ required: true })
   userId: string;
 
   @Prop({ required: true, type: Object })
@@ -20,4 +23,4 @@ export class Screenshot {
 }
 
 export const ScreenshotSchema = SchemaFactory.createForClass(Screenshot);
-ScreenshotSchema.index({ userId: 1, 'header.uniqueID': 1 }, { unique: true });
+ScreenshotSchema.index({ userId: 1, uniqueId: 1 }, { unique: true });

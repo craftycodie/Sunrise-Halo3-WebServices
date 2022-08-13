@@ -10,6 +10,7 @@ export default class ScreenshotPersistanceMapper {
       userId: screenshot.userId.value,
       header: screenshot.header,
       data: screenshot.data,
+      uniqueId: screenshot.header.uniqueId,
     };
   }
 }
