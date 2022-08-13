@@ -1,0 +1,17 @@
+enum Rank {
+  RECRUIT,
+  APPRENTICE,
+  PRIVATE,
+  CORPORAL,
+  SERGEANT,
+  GUNNERY_SERGEANT,
+  LIEUTENANT,
+  CAPTAIN,
+  MAJOR,
+  COMMANDER,
+  COLNEL,
+  BRIGADIER,
+  GENERAL,
+}
+
+export default Rank;
