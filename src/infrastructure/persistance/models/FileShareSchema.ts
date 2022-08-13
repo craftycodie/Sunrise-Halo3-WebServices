@@ -6,8 +6,10 @@ export type FileShareDocument = FileShare & Document;
 
 @Schema()
 export class FileShare {
-  @Prop({ required: true })
+  @Prop({ required: true, unique: true })
   id: string;
+  @Prop({ required: true })
+  ownerId: string;
   message: string;
   @Prop({ required: true })
   quotaBytes: number;

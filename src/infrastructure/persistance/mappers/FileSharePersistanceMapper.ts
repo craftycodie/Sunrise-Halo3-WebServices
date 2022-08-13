@@ -12,6 +12,7 @@ export default class FileSharePersistanceMapper {
     return {
       fileShare: {
         id: fileShare.id.value,
+        ownerId: fileShare.ownerId.value,
         message: fileShare.message,
         quotaBytes: fileShare.quotaBytes,
         quotaSlots: fileShare.quotaSlots,
@@ -20,6 +21,7 @@ export default class FileSharePersistanceMapper {
       },
       files: fileShare.slots.map((file) => {
         return {
+          id: file.id.value,
           shareID: fileShare.id.value,
           slotNumber: file.slotNumber.value,
           data: file.data,

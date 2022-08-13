@@ -8,10 +8,10 @@ import {
 } from '../models/FileShareSlotSchema';
 import IFileShareRepository from 'src/domain/repositories/IFileShareRepository';
 import FileShare from 'src/domain/aggregates/FileShare';
-import ShareID from 'src/domain/value-objects/ShareId';
 import FileShareDomainMapper from '../mappers/FileShareDomainMapper';
 import FileSharePersistanceMapper from '../mappers/FileSharePersistanceMapper';
 import { FileShareDocument } from '../models/FileShareSchema';
+import UserID from 'src/domain/value-objects/UserId';
 
 @Injectable()
 export default class FileShareRepository implements IFileShareRepository {
@@ -27,7 +27,7 @@ export default class FileShareRepository implements IFileShareRepository {
 
   public async save(target: FileShare) {
     const fileShare = await this.fileShareModel.findOneAndUpdate(
-      { id: target.id.value },
+      { ownerId: target.ownerId.value },
       this.fileSharePersistanceMapper.mapToDataModel(target).fileShare,
       { upsert: true, new: true },
     );
@@ -67,12 +67,10 @@ export default class FileShareRepository implements IFileShareRepository {
     return this.fileShareDomainMapper.mapToDomainModel(fileShare, files);
   }
 
-  public async find(id: ShareID) {
-    console.log(id.value);
-    const fileShare = await this.fileShareModel.findOne({ id: id.value });
-    console.log(fileShare.id);
+  public async findByOwner(id: UserID) {
+    const fileShare = await this.fileShareModel.findOne({ ownerId: id.value });
     if (!fileShare) return;
-    const files = await this.fileShareSlotModel.find({ shareID: id.value });
+    const files = await this.fileShareSlotModel.find({ shareID: fileShare.id });
     return this.fileShareDomainMapper.mapToDomainModel(fileShare, files);
   }
 }

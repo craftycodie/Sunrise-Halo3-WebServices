@@ -1,14 +1,10 @@
 import { Inject } from '@nestjs/common';
-import { ContextIdFactory } from '@nestjs/core';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-import FileShare from 'src/domain/aggregates/FileShare';
 import FileShareSlot from 'src/domain/entities/FileShareSlot';
 import IFileShareRepository, {
   IFileShareRepositorySymbol,
 } from 'src/domain/repositories/IFileShareRepository';
-import SlotNumber from 'src/domain/value-objects/SlotNumber';
 import UniqueID from 'src/domain/value-objects/UniqueID';
-import { CreateFileShareCommand } from '../commands/CreateFileShareCommand';
 import { UploadFileCommand } from '../commands/UploadFileCommand';
 
 @CommandHandler(UploadFileCommand)
@@ -21,7 +17,7 @@ export class UploadFileCommandHandler
   ) {}
 
   async execute(command: UploadFileCommand) {
-    const fileShare = await this.repository.find(command.shareID);
+    const fileShare = await this.repository.findByOwner(command.shareID);
     fileShare.uploadFile(
       FileShareSlot.create({
         slotNumber: command.slot,

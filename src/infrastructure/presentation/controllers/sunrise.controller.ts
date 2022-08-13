@@ -6,6 +6,7 @@ import {
   Inject,
   NotFoundException,
   Param,
+  ParseUUIDPipe,
   Post,
   Res,
   StreamableFile,
@@ -18,15 +19,16 @@ import { ApiTags } from '@nestjs/swagger';
 import { readdir, readFile, stat } from 'fs/promises';
 import { join } from 'path';
 import { Response } from 'express';
-import { createReadStream } from 'fs';
 import { deflate, inflate } from 'pako';
 import { GetFileshareQuery } from 'src/application/queries/GetFileshareQuery';
-import ShareID from 'src/domain/value-objects/ShareId';
 import FileShare from 'src/domain/aggregates/FileShare';
 import SlotNumber from 'src/domain/value-objects/SlotNumber';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { UploadFileCommand } from 'src/application/commands/UploadFileCommand';
 import UserID from 'src/domain/value-objects/UserId';
+import { GetPlayerScreenshotsQuery } from 'src/application/queries/GetPlayerScreenshotsQuery';
+import Screenshot from 'src/domain/aggregates/Screenshot';
+import { GetScreenshotQuery } from 'src/application/queries/GetScreenshotQuery';
+import Uuid from 'src/domain/value-objects/Uuid';
 
 @ApiTags('Sunrise')
 @Controller('/sunrise')
@@ -37,19 +39,21 @@ export class SunriseController {
     private readonly commandBus: CommandBus,
   ) {}
 
-  @Get('/screenshots')
-  async screenshots(@Res({ passthrough: true }) res: Response) {
-    const path = join(process.cwd(), `uploads/screenshots`);
-    const files = await readdir(path);
-
+  @Get('/screenshots/:userId')
+  async playerScreenshots(@Param('userId') userId: string) {
+    const screenshots: Screenshot[] = await this.queryBus.execute(
+      new GetPlayerScreenshotsQuery(new UserID(userId)),
+    );
     return `
 <html>
     <body>
-        <h1>Sunrise Screenshots</h1>
-        ${files.map(
-          (file) =>
-            `<img onerror="this.style.display='none'" height="450" src="/sunrise/screenshot/${file}"/>`,
-        )}
+        <h1>Player Screenshots</h1>
+        ${screenshots
+          .map(
+            (screenshot) =>
+              `<img height="450" src="/sunrise/screenshot/${screenshot.id.value}"/>`,
+          )
+          .join('')}
     </body>
 </html>
 `;
@@ -72,7 +76,7 @@ export class SunriseController {
     @Param('slot') slotNumber: string,
   ) {
     const fileShare: FileShare = await this.queryBus.execute(
-      new GetFileshareQuery(1, null, new ShareID(shareId)),
+      new GetFileshareQuery(new UserID(shareId)),
     );
 
     if (!fileShare) throw new NotFoundException();
@@ -87,12 +91,11 @@ export class SunriseController {
     const compressedBuffer = slot.data;
 
     if (!slotNumber.includes('jpg')) {
-        res.set('Content-Type', 'application/octet-stream');
-        res.set('Content-Length', compressedBuffer.byteLength.toString());
-        res.set('Cache-Control', 'no-cache');
-        return new StreamableFile(compressedBuffer);
+      res.set('Content-Type', 'application/octet-stream');
+      res.set('Content-Length', compressedBuffer.byteLength.toString());
+      res.set('Cache-Control', 'no-cache');
+      return new StreamableFile(compressedBuffer);
     }
-
 
     const cmpLegth = this.swap32(
       new Uint32Array(compressedBuffer.buffer.slice(0x2ac, 0x2b0))[0],
@@ -120,108 +123,108 @@ export class SunriseController {
     return byteArray;
   };
 
-//   @Post('/fileshare/:shareId/:slot')
-//   @Header('Content-Type', 'image/jpeg')
-//   @UseInterceptors(FileInterceptor('upload'))
-//   async setFileshareScreenshot(
-//     @Res({ passthrough: true }) res: Response,
-//     @Param('shareId') shareId: string,
-//     @Param('slot') slotNumber: string,
-//     @UploadedFile() upload: Express.Multer.File,
-//   ) {
-//     const fileShare: FileShare = await this.queryBus.execute(
-//       new GetFileshareQuery(1, null, new ShareID(shareId)),
-//     );
+  //   @Post('/fileshare/:shareId/:slot')
+  //   @Header('Content-Type', 'image/jpeg')
+  //   @UseInterceptors(FileInterceptor('upload'))
+  //   async setFileshareScreenshot(
+  //     @Res({ passthrough: true }) res: Response,
+  //     @Param('shareId') shareId: string,
+  //     @Param('slot') slotNumber: string,
+  //     @UploadedFile() upload: Express.Multer.File,
+  //   ) {
+  //     const fileShare: FileShare = await this.queryBus.execute(
+  //       new GetFileshareQuery(1, null, new ShareID(shareId)),
+  //     );
 
-//     if (!fileShare) throw new NotFoundException();
+  //     if (!fileShare) throw new NotFoundException();
 
-//     const slot = fileShare.getSlot(
-//       new SlotNumber(parseInt(slotNumber.replace('.jpg', ''))),
-//     );
+  //     const slot = fileShare.getSlot(
+  //       new SlotNumber(parseInt(slotNumber.replace('.jpg', ''))),
+  //     );
 
-//     if (slot.header.filetype != 13)
-//       throw new BadRequestException('The provided file is not a screenshot.');
+  //     if (slot.header.filetype != 13)
+  //       throw new BadRequestException('The provided file is not a screenshot.');
 
-//     const compressedBuffer = slot.data;
+  //     const compressedBuffer = slot.data;
 
-//     const cmpLegth = this.swap32(
-//       new Uint32Array(compressedBuffer.buffer.slice(0x2ac, 0x2b0))[0],
-//     );
+  //     const cmpLegth = this.swap32(
+  //       new Uint32Array(compressedBuffer.buffer.slice(0x2ac, 0x2b0))[0],
+  //     );
 
-//     const uncompressedBuffer = Buffer.from(
-//         inflate(compressedBuffer.buffer.slice(0x2b9, 0x2a8 + cmpLegth)).subarray(
-//             16,
-//         ),
-//     );
+  //     const uncompressedBuffer = Buffer.from(
+  //         inflate(compressedBuffer.buffer.slice(0x2b9, 0x2a8 + cmpLegth)).subarray(
+  //             16,
+  //         ),
+  //     );
 
-//     const newCompressedImage = deflate(Buffer.concat([uncompressedBuffer.subarray(0, 0x10), upload.buffer]));
-//     // const newBlf = Buffer.from([]);
-//     // newBlf.
+  //     const newCompressedImage = deflate(Buffer.concat([uncompressedBuffer.subarray(0, 0x10), upload.buffer]));
+  //     // const newBlf = Buffer.from([]);
+  //     // newBlf.
 
-//     const newBlf = Buffer.concat([
-//       compressedBuffer.subarray(0, 0x2ac), // blf header...
-//       Buffer.from(this.intToByteArray(this.swap32(newCompressedImage.byteLength + 0x11))), // update _cmp size...
-//       compressedBuffer.subarray(0x2b0, 0x2b9), // _cmp header...
-//       newCompressedImage, // _cmp data
-//       compressedBuffer.subarray(0x2a8 + cmpLegth, 0x2a8 + cmpLegth + 0x11), // blf footer.
-//     ]);
+  //     const newBlf = Buffer.concat([
+  //       compressedBuffer.subarray(0, 0x2ac), // blf header...
+  //       Buffer.from(this.intToByteArray(this.swap32(newCompressedImage.byteLength + 0x11))), // update _cmp size...
+  //       compressedBuffer.subarray(0x2b0, 0x2b9), // _cmp header...
+  //       newCompressedImage, // _cmp data
+  //       compressedBuffer.subarray(0x2a8 + cmpLegth, 0x2a8 + cmpLegth + 0x11), // blf footer.
+  //     ]);
 
-//     slot.data = newBlf;
+  //     slot.data = newBlf;
 
-//     await this.commandBus.execute(new UploadFileCommand(new UserID(shareId), new ShareID(shareId), slot.slotNumber, slot.header, newBlf));
+  //     await this.commandBus.execute(new UploadFileCommand(new UserID(shareId), new ShareID(shareId), slot.slotNumber, slot.header, newBlf));
 
-//     res.set('Content-Length', newBlf.byteLength.toString());
-//     res.set('Cache-Control', 'no-cache');
-//     return await this.getFileshareScreenshot(res, shareId, slotNumber);
-//   }
+  //     res.set('Content-Length', newBlf.byteLength.toString());
+  //     res.set('Cache-Control', 'no-cache');
+  //     return await this.getFileshareScreenshot(res, shareId, slotNumber);
+  //   }
 
-//   @Post('/fileshare/:shareId/:slot')
-//   @UseInterceptors(FileInterceptor('upload'))
-//   async setFile(
-//     @Res({ passthrough: true }) res: Response,
-//     @Param('shareId') shareId: string,
-//     @Param('slot') slotNumber: string,
-//     @UploadedFile() upload: Express.Multer.File,
-//   ) {
-//     const fileShare: FileShare = await this.queryBus.execute(
-//       new GetFileshareQuery(1, null, new ShareID(shareId)),
-//     );
+  //   @Post('/fileshare/:shareId/:slot')
+  //   @UseInterceptors(FileInterceptor('upload'))
+  //   async setFile(
+  //     @Res({ passthrough: true }) res: Response,
+  //     @Param('shareId') shareId: string,
+  //     @Param('slot') slotNumber: string,
+  //     @UploadedFile() upload: Express.Multer.File,
+  //   ) {
+  //     const fileShare: FileShare = await this.queryBus.execute(
+  //       new GetFileshareQuery(1, null, new ShareID(shareId)),
+  //     );
 
-//     if (!fileShare) throw new NotFoundException();
+  //     if (!fileShare) throw new NotFoundException();
 
-//     const slot = fileShare.getSlot(
-//       new SlotNumber(parseInt(slotNumber.replace('.jpg', ''))),
-//     );
+  //     const slot = fileShare.getSlot(
+  //       new SlotNumber(parseInt(slotNumber.replace('.jpg', ''))),
+  //     );
 
-//     if (slot.header.filetype != 13)
-//       throw new BadRequestException('The provided file is not a screenshot.');
+  //     if (slot.header.filetype != 13)
+  //       throw new BadRequestException('The provided file is not a screenshot.');
 
-//     const compressedBuffer = slot.data;
+  //     const compressedBuffer = slot.data;
 
-//     const cmpLegth = this.swap32(
-//       new Uint32Array(compressedBuffer.buffer.slice(0x2ac, 0x2b0))[0],
-//     );
+  //     const cmpLegth = this.swap32(
+  //       new Uint32Array(compressedBuffer.buffer.slice(0x2ac, 0x2b0))[0],
+  //     );
 
-//     const newCompressedImage = deflate(upload.buffer);
-//     // const newBlf = Buffer.from([]);
-//     // newBlf.
+  //     const newCompressedImage = deflate(upload.buffer);
+  //     // const newBlf = Buffer.from([]);
+  //     // newBlf.
 
-//     const newBlf = Buffer.concat([
-//       compressedBuffer.subarray(0, 0x2ac), // blf header...
-//       Buffer.from(this.intToByteArray(newCompressedImage.byteLength)), // update _cmp size...
-//       compressedBuffer.subarray(0x2b0, 0x2b9), // _cmp header...
-//       newCompressedImage, // _cmp data
-//       compressedBuffer.slice(0x2a8 + cmpLegth, 11), // blf footer.
-//     ]);
+  //     const newBlf = Buffer.concat([
+  //       compressedBuffer.subarray(0, 0x2ac), // blf header...
+  //       Buffer.from(this.intToByteArray(newCompressedImage.byteLength)), // update _cmp size...
+  //       compressedBuffer.subarray(0x2b0, 0x2b9), // _cmp header...
+  //       newCompressedImage, // _cmp data
+  //       compressedBuffer.slice(0x2a8 + cmpLegth, 11), // blf footer.
+  //     ]);
 
-//     slot.data = newBlf;
+  //     slot.data = newBlf;
 
-//     await this.commandBus.execute(new UploadFileCommand(new UserID(shareId), new ShareID(shareId), slot.slotNumber, slot.header, newBlf));
+  //     await this.commandBus.execute(new UploadFileCommand(new UserID(shareId), new ShareID(shareId), slot.slotNumber, slot.header, newBlf));
 
-//     res.set('Content-Length', newBlf.byteLength.toString());
-//     res.set('Cache-Control', 'no-cache');
-//     return await this.getFileshareScreenshot(res, shareId, slotNumber);
-//   }
+  //     res.set('Content-Length', newBlf.byteLength.toString());
+  //     res.set('Cache-Control', 'no-cache');
+  //     return await this.getFileshareScreenshot(res, shareId, slotNumber);
+  //   }
 
   @Post('/deflate')
   @UseInterceptors(FileInterceptor('upload'))
@@ -236,19 +239,19 @@ export class SunriseController {
     return new StreamableFile(deflated);
   }
 
-  @Get('/screenshot/:filename')
+  @Get('/screenshot/:id')
   @Header('Content-Type', 'image/jpeg')
   async screenshot(
     @Res({ passthrough: true }) res: Response,
-    @Param('filename') filename: string,
+    @Param('id') id: string,
   ) {
-    const path = join(process.cwd(), `uploads/screenshots`, filename);
+    const screenshot: Screenshot | undefined = await this.queryBus.execute(
+      new GetScreenshotQuery(Uuid.create(id.toString())),
+    );
 
-    const stats = await stat(path);
+    if (screenshot == undefined) throw new NotFoundException();
 
-    if (!stats.isFile()) throw new NotFoundException();
-
-    let screenshotBuffer = await readFile(path);
+    let screenshotBuffer = screenshot.data;
 
     const fileType = this.swap32(
       new Uint32Array(screenshotBuffer.buffer.slice(0xf8, 0xfc))[0],
@@ -259,7 +262,7 @@ export class SunriseController {
 
     screenshotBuffer = Buffer.from(screenshotBuffer.buffer.slice(0x2b8, -11));
 
-    res.set('Content-Length', stats.size.toString());
+    res.set('Content-Length', screenshot.data.byteLength.toString());
     res.set('Cache-Control', 'no-cache');
     return new StreamableFile(screenshotBuffer);
   }

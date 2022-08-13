@@ -18,11 +18,11 @@ export class CreateFileShareCommandHandler
   async execute(command: CreateFileShareCommand) {
     return this.repository.save(
       FileShare.create({
-        id: command.shareID,
+        ownerId: command.shareID,
         slots: [],
-        quotaBytes: 99999,
-        quotaSlots: 9,
-        visibleSlots: 9,
+        quotaBytes: 26214400,
+        quotaSlots: 6,
+        visibleSlots: 6,
         subscriptionHash: 'SUNRISE_BETA',
       }),
     );

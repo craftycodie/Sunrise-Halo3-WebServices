@@ -2,21 +2,15 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document } from 'mongoose';
 import ContentHeader from '../../../domain/value-objects/ContentHeader';
 
-export type FileShareSlotDocument = FileShareSlot & Document;
+export type ScreenshotDocument = Screenshot & Document;
 
 @Schema()
-export class FileShareSlot {
+export class Screenshot {
   @Prop({ required: true, unique: true })
   id: string;
 
   @Prop({ required: true })
-  uniqueId: string;
-
-  @Prop({ required: true })
-  slotNumber: number;
-
-  @Prop({ required: true })
-  shareID: string;
+  userId: string;
 
   @Prop({ required: true, type: Object })
   header: ContentHeader;
@@ -25,5 +19,5 @@ export class FileShareSlot {
   data: Buffer;
 }
 
-export const FileShareSlotSchema = SchemaFactory.createForClass(FileShareSlot);
-FileShareSlotSchema.index({ slotNumber: 1, shareID: 1 }, { unique: true });
+export const ScreenshotSchema = SchemaFactory.createForClass(Screenshot);
+ScreenshotSchema.index({ userId: 1, 'header.uniqueID': 1 }, { unique: true });

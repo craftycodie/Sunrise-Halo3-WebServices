@@ -1,9 +1,7 @@
 import {
   BadRequestException,
-  Body,
   Controller,
   Get,
-  Header,
   Headers,
   Inject,
   Post,
@@ -16,14 +14,11 @@ import ILogger, { ILoggerSymbol } from '../../../ILogger';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { GetFileshareQuery } from 'src/application/queries/GetFileshareQuery';
 import UserID from 'src/domain/value-objects/UserId';
-import ShareID from 'src/domain/value-objects/ShareId';
 import Locale from 'src/domain/value-objects/Locale';
 import { ApiQuery, ApiTags } from '@nestjs/swagger';
-import { Response } from 'express';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { writeFile } from 'fs/promises';
 import { join } from 'path';
-import { cwd } from 'process';
 import { readContentHeader } from '../blf/ContentHeader';
 import FileShare from 'src/domain/aggregates/FileShare';
 import { CreateFileShareCommand } from 'src/application/commands/CreateFileShareCommand';
@@ -31,6 +26,7 @@ import { UploadFileCommand } from 'src/application/commands/UploadFileCommand';
 import SlotNumber from 'src/domain/value-objects/SlotNumber';
 import FileShareSlot from 'src/domain/entities/FileShareSlot';
 import { DeleteFileCommand } from 'src/application/commands/DeleteFileCommand';
+import { UploadScreenshotCommand } from 'src/application/commands/UploadScreenshotCommand';
 
 const mapFileshareToResponse = (fileshare: FileShare) => {
   return `QuotaBytes: ${fileshare.quotaBytes}
@@ -45,10 +41,26 @@ ${fileshare.slots.map((slot) => mapFileShareSlotToResponse(slot)).join('')}
 
 const getFileTypeString = (fileType: number) => {
   switch (fileType) {
+    case 1:
+      return 'GameVariantCtf';
     case 2:
       return 'GameVariantSlayer';
+    case 3:
+      return 'GameVariantOddball';
+    case 4:
+      return 'GameVariantKing';
+    case 5:
+      return 'GameVariantJuggernaut';
+    case 6:
+      return 'GameVariantTerritories';
+    case 7:
+      return 'GameVariantAssault';
+    case 8:
+      return 'GameVariantInfection';
     case 9:
       return 'GameVariantVip';
+    case 10:
+      return 'MapVariant';
     case 11:
       return 'Film';
     case 12:
@@ -104,9 +116,9 @@ export class GameApiController {
   ) {
     let fileshare = await this.queryBus.execute(
       new GetFileshareQuery(
+        new UserID(shareID),
         parseInt(titleID),
         new UserID(userID),
-        new ShareID(shareID),
         new Locale(locale),
       ),
     );
@@ -116,7 +128,7 @@ export class GameApiController {
         new CreateFileShareCommand(
           parseInt(titleID),
           new UserID(userID),
-          new ShareID(shareID),
+          new UserID(shareID),
         ),
       );
 
@@ -147,7 +159,7 @@ export class GameApiController {
     @Query('serverId') serverId,
   ) {
     const fileShare: FileShare = await this.queryBus.execute(
-      new GetFileshareQuery(titleID, new UserID(userID), new ShareID(shareID)),
+      new GetFileshareQuery(new UserID(shareID), titleID, new UserID(userID)),
     );
     return fileShare.getSlot(new SlotNumber(slot)).header.size;
   }
@@ -162,6 +174,10 @@ export class GameApiController {
     @Query('locale') locale,
   ) {
     return 'Status: Subscribed';
+  }
+
+  uncuckBungieHeader(header: string) {
+    return header.replace('"', '').replace('"', '');
   }
 
   @Post('/FilesUpload.ashx')
@@ -183,9 +199,9 @@ export class GameApiController {
 
     await this.commandBus.execute(
       new UploadFileCommand(
-        new UserID(userid.replace('"', '').replace('"', '')),
-        new ShareID(shareID.replace('"', '').replace('"', '')),
-        new SlotNumber(parseInt(slot.replace('"', '').replace('"', ''))),
+        new UserID(this.uncuckBungieHeader(userid)),
+        new UserID(this.uncuckBungieHeader(shareID)),
+        new SlotNumber(parseInt(this.uncuckBungieHeader(slot))),
         contentHeader,
         upload.buffer,
       ),
@@ -203,7 +219,7 @@ export class GameApiController {
     @Query('serverid') serverId,
   ) {
     const fileshare: FileShare = await this.queryBus.execute(
-      new GetFileshareQuery(1, new UserID(userid), new ShareID(shareID)),
+      new GetFileshareQuery(new UserID(shareID)),
     );
 
     return new StreamableFile(fileshare.getFileData(new SlotNumber(slot)));
@@ -212,22 +228,29 @@ export class GameApiController {
   // Screenshots are uploaded when they are taken apparently.
   @Post('/FilesUploadBlind.ashx')
   @UseInterceptors(FileInterceptor('upload'))
-  async uploadFileBlind(@UploadedFile() upload: Express.Multer.File) {
+  async uploadFileBlind(
+    @Headers('title') titleID,
+    @Headers('userid') userID,
+    @Headers('gameid') gameID,
+    @UploadedFile() upload: Express.Multer.File,
+  ) {
     if (upload.originalname == 'screen.blf') {
-      await writeFile(
-        join(process.cwd(), 'uploads', upload.originalname),
-        upload.buffer,
+      const contentHeader = readContentHeader(upload.buffer.slice(0x3c, 0x138));
+
+      contentHeader.size = upload.size;
+
+      if (Buffer.from(upload.buffer.slice(0x0, 0x4)).toString() != '_blf')
+        throw new BadRequestException('Invalid file.');
+
+      await this.commandBus.execute(
+        new UploadScreenshotCommand(
+          new UserID(this.uncuckBungieHeader(userID)),
+          contentHeader,
+          upload.buffer,
+        ),
       );
 
-      await writeFile(
-        join(
-          process.cwd(),
-          'uploads/screenshots',
-          'screenshot_' + new Date().getTime().toString(),
-        ),
-        upload.buffer,
-      );
-      return;
+      return upload.size;
     } else {
       await writeFile(
         join(process.cwd(), 'uploads/fileshare', upload.originalname),
@@ -269,7 +292,7 @@ InitialUrl: /gameapi/FilesDownload.ashx?userId=${userID}&shareId=${shareID}&slot
     return await this.commandBus.execute(
       new DeleteFileCommand(
         new UserID(userID),
-        new ShareID(shareID),
+        new UserID(shareID),
         new SlotNumber(slot),
       ),
     );

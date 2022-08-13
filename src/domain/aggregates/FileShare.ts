@@ -1,11 +1,13 @@
+import { v4 } from 'uuid';
 import FileShareSlot from '../entities/FileShareSlot';
 import GameID from '../value-objects/GameID';
-import ShareID from '../value-objects/ShareId';
 import SlotNumber from '../value-objects/SlotNumber';
 import UserID from '../value-objects/UserId';
+import Uuid from '../value-objects/Uuid';
 
 interface FileShareProps {
-  id: ShareID;
+  id: Uuid;
+  ownerId: UserID;
   slots: FileShareSlot[];
   message?: string;
   quotaBytes: number;
@@ -20,7 +22,8 @@ export default class FileShare implements FileShareProps {
   }
 
   // TODO: Give these private setters.
-  id: ShareID;
+  id: Uuid;
+  ownerId: UserID;
   slots: FileShareSlot[];
   message?: string;
   quotaBytes: number;
@@ -40,14 +43,18 @@ export default class FileShare implements FileShareProps {
   }
 
   getSlot(getSlotNumber: SlotNumber): FileShareSlot {
-    return this.slots.find((slot) => slot.slotNumber.value == getSlotNumber.value);
+    return this.slots.find(
+      (slot) => slot.slotNumber.value == getSlotNumber.value,
+    );
   }
 
   getFileData(getSlotNumber: SlotNumber): Buffer {
-    return this.slots.find((slot) => slot.slotNumber.value == getSlotNumber.value).data;
+    return this.slots.find(
+      (slot) => slot.slotNumber.value == getSlotNumber.value,
+    ).data;
   }
 
-  public static create(props: FileShareProps): FileShare {
-    return new FileShare({ ...props });
+  public static create(props: Omit<FileShareProps, 'id'>): FileShare {
+    return new FileShare({ ...props, id: Uuid.create() });
   }
 }

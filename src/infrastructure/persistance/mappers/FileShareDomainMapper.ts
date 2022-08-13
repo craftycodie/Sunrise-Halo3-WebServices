@@ -4,11 +4,10 @@ import { FileShareSlot as FileModel } from '../models/FileShareSlotSchema';
 import ILogger, { ILoggerSymbol } from '../../../ILogger';
 import FileShareSlot from '../../../domain/entities/FileShareSlot';
 import { Inject, Injectable } from '@nestjs/common';
-import ShareID from 'src/domain/value-objects/ShareId';
 import UserID from 'src/domain/value-objects/UserId';
-import GameID from 'src/domain/value-objects/GameID';
 import UniqueID from 'src/domain/value-objects/UniqueID';
 import SlotNumber from 'src/domain/value-objects/SlotNumber';
+import Uuid from 'src/domain/value-objects/Uuid';
 
 @Injectable()
 export default class FileShareDomainMapper {
@@ -21,6 +20,7 @@ export default class FileShareDomainMapper {
     const mappedFiles: FileShareSlot[] = files.map(
       (file) =>
         new FileShareSlot({
+          id: Uuid.create(file.id),
           uniqueId: new UniqueID(file.uniqueId),
           slotNumber: new SlotNumber(file.slotNumber),
           data: file.data,
@@ -29,7 +29,8 @@ export default class FileShareDomainMapper {
     );
 
     const aggregateAlbum = new FileShare({
-      id: new ShareID(fileShare.id),
+      id: Uuid.create(fileShare.id),
+      ownerId: UserID.create(fileShare.ownerId),
       message: fileShare.message,
       visibleSlots: fileShare.visibleSlots,
       quotaBytes: fileShare.quotaBytes,

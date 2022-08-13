@@ -1,9 +1,9 @@
 import FileShare from '../aggregates/FileShare';
-import ShareID from '../value-objects/ShareId';
+import UserID from '../value-objects/UserId';
 
 export default interface IFileShareRepository {
   save: (target: FileShare) => Promise<FileShare>;
-  find: (id: ShareID) => Promise<FileShare | null>;
+  findByOwner: (ownerId: UserID) => Promise<FileShare | null>;
 }
 
 export const IFileShareRepositorySymbol = Symbol('IFileShareRepository');

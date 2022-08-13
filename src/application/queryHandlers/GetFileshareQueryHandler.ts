@@ -15,6 +15,6 @@ export class GetFileshareQueryHandler
   ) {}
 
   async execute(query: GetFileshareQuery) {
-    return this.repository.find(query.shareID);
+    return this.repository.findByOwner(query.shareID);
   }
 }

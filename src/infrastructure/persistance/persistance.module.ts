@@ -10,6 +10,11 @@ import { IFileShareRepositorySymbol } from 'src/domain/repositories/IFileShareRe
 import FileShareRepository from './repositories/FileShareRepository';
 import FileSharePersistanceMapper from './mappers/FileSharePersistanceMapper';
 import FileShareDomainMapper from './mappers/FileShareDomainMapper';
+import ScreenshotPersistanceMapper from './mappers/ScreenshotPersistanceMapper';
+import ScreenshotDomainMapper from './mappers/ScreenshotDomainMapper';
+import { IScreenshotRepositorySymbol } from 'src/domain/repositories/IScreenshotRepository';
+import ScreenshotRepository from './repositories/ScreenshotRepository';
+import { Screenshot, ScreenshotSchema } from './models/ScreenshotSchema';
 
 const persistanceSettings = new PersistanceSettings().get();
 
@@ -19,6 +24,8 @@ const persistanceSettings = new PersistanceSettings().get();
     MongooseModule.forFeature([
       { name: FileShare.name, schema: FileShareSchema },
       { name: FileShareSlot.name, schema: FileShareSlotSchema },
+
+      { name: Screenshot.name, schema: ScreenshotSchema },
     ]),
   ],
   providers: [
@@ -28,7 +35,14 @@ const persistanceSettings = new PersistanceSettings().get();
     },
     FileSharePersistanceMapper,
     FileShareDomainMapper,
+
+    {
+      provide: IScreenshotRepositorySymbol,
+      useClass: ScreenshotRepository,
+    },
+    ScreenshotPersistanceMapper,
+    ScreenshotDomainMapper,
   ],
-  exports: [IFileShareRepositorySymbol],
+  exports: [IFileShareRepositorySymbol, IScreenshotRepositorySymbol],
 })
 export class PersistanceModule {}
