@@ -8,11 +8,7 @@ export default abstract class AbstractEnvSettings<T> {
         port: parseInt(process.env.API_PORT),
       },
       persistance: {
-        host: process.env.DB_HOST,
-        user: process.env.DB_USER,
-        password: process.env.DB_PASSWORD,
-        database: process.env.DB_NAME,
-        port: parseInt(process.env.DB_PORT),
+        mongoURI: process.env.MONGO_URI,
       },
     };
   }
