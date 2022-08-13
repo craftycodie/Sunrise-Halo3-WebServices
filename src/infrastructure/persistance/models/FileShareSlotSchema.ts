@@ -23,3 +23,4 @@ export class FileShareSlot {
 }
 
 export const FileShareSlotSchema = SchemaFactory.createForClass(FileShareSlot);
+FileShareSlotSchema.index({ slotNumber: 1, shareID: 1 }, { unique: true });

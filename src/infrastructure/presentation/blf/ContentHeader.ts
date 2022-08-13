@@ -1,4 +1,4 @@
-import ContentHeader from "src/domain/value-objects/ContentHeader";
+import ContentHeader from 'src/domain/value-objects/ContentHeader';
 
 function readLong(arrayBuffer: ArrayBuffer) {
   return BigInt('0x' + Buffer.from(arrayBuffer).toString('hex')).toString();

@@ -39,7 +39,7 @@ SlotCount: ${fileshare.slots.length}
 VisibleSlots: ${fileshare.visibleSlots}
 SubscriptionHash: ${fileshare.subscriptionHash}
 Message: ${fileshare.message ? fileshare.message : ''}
-${fileshare.slots.map((slot) => mapFileShareSlotToResponse(slot))}
+${fileshare.slots.map((slot) => mapFileShareSlotToResponse(slot)).join('')}
 `;
 };
 
@@ -48,9 +48,11 @@ const getFileTypeString = (fileType: number) => {
     case 2:
       return 'GameVariantSlayer';
     case 9:
-      return 'GameVariantVIP';
+      return 'GameVariantVip';
     case 11:
       return 'Film';
+    case 12:
+      return 'FilmClip';
     case 13:
       return 'Screenshot';
     default:
@@ -145,8 +147,8 @@ export class GameApiController {
     @Query('serverId') serverId,
   ) {
     const fileShare: FileShare = await this.queryBus.execute(
-      new GetFileshareQuery(titleID, new UserID(userID), new ShareID(shareID),
-    ));
+      new GetFileshareQuery(titleID, new UserID(userID), new ShareID(shareID)),
+    );
     return fileShare.getSlot(new SlotNumber(slot)).header.size;
   }
 
@@ -189,8 +191,9 @@ export class GameApiController {
       ),
     );
 
-    return 0;
+    return upload.size;
   }
+
   @Get('/FilesDownload.ashx')
   async downloadFile(
     @Headers('title') titleID,
@@ -199,7 +202,9 @@ export class GameApiController {
     @Query('slot') slot,
     @Query('serverid') serverId,
   ) {
-    const fileshare : FileShare = await this.queryBus.execute(new GetFileshareQuery(1, new UserID(userid), new ShareID(shareID)));
+    const fileshare: FileShare = await this.queryBus.execute(
+      new GetFileshareQuery(1, new UserID(userid), new ShareID(shareID)),
+    );
 
     return new StreamableFile(fileshare.getFileData(new SlotNumber(slot)));
   }
@@ -261,7 +266,13 @@ InitialUrl: /gameapi/FilesDownload.ashx?userId=${userID}&shareId=${shareID}&slot
     @Query('slot') slot,
     @Query('serverId') serverId,
   ) {
-    return await this.commandBus.execute(new DeleteFileCommand(new UserID(userID), new ShareID(shareID), new SlotNumber(slot)));
+    return await this.commandBus.execute(
+      new DeleteFileCommand(
+        new UserID(userID),
+        new ShareID(shareID),
+        new SlotNumber(slot),
+      ),
+    );
   }
 
   @Post('/MachineUpdateNetworkStats.ashx')

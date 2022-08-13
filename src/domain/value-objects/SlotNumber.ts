@@ -2,7 +2,7 @@ import { TinyTypeOf } from 'tiny-types';
 
 export default class SlotNumber extends TinyTypeOf<number>() {
   public static isValidValue(value: number): boolean {
-    return value <= 32;
+    return value <= 25;
   }
 
   public static create(value: number): SlotNumber {

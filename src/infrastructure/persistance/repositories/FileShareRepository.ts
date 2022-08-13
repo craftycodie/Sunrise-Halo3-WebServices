@@ -29,7 +29,7 @@ export default class FileShareRepository implements IFileShareRepository {
     const fileShare = await this.fileShareModel.findOneAndUpdate(
       { id: target.id.value },
       this.fileSharePersistanceMapper.mapToDataModel(target).fileShare,
-      { upsert: true },
+      { upsert: true, new: true },
     );
 
     const persistanceFiles =
@@ -39,32 +39,40 @@ export default class FileShareRepository implements IFileShareRepository {
 
     for (let i = 0; i < persistanceFiles.length; i++) {
       const file = persistanceFiles[i];
-      console.log(file);
 
       const updatedFile = await this.fileShareSlotModel.findOneAndUpdate(
-        { shareID: target.id.value },
+        { shareID: target.id.value, slotNumber: file.slotNumber },
         file,
-        { upsert: true },
+        { upsert: true, new: true },
       );
 
-      console.log(updatedFile)
+      if (updatedFile == null) {
+        console.log({
+          shareID: file.shareID,
+          slot: file.slotNumber,
+          uniqueId: file.uniqueId,
+        });
+      }
 
-      files.push(
-        updatedFile
-      );
+      files.push(updatedFile);
     }
 
-    console.log(files.map((file) => ({ uniqueId: file.uniqueId, slot: file.slotNumber})));
+    //console.log(files.map((file) => (file ? { uniqueId: file.uniqueId, slot: file.slotNumber} : "no file")));
 
-    await this.fileShareSlotModel.deleteMany({ uniqueId: { $nin: persistanceFiles.map(file => file.uniqueId) } })
+    await this.fileShareSlotModel.deleteMany({
+      shareID: target.id.value,
+      uniqueId: { $nin: persistanceFiles.map((file) => file.uniqueId) },
+    });
 
     return this.fileShareDomainMapper.mapToDomainModel(fileShare, files);
   }
 
   public async find(id: ShareID) {
+    console.log(id.value);
     const fileShare = await this.fileShareModel.findOne({ id: id.value });
+    console.log(fileShare.id);
     if (!fileShare) return;
-    const files = await this.fileShareSlotModel.find({ shareId: id.value });
+    const files = await this.fileShareSlotModel.find({ shareID: id.value });
     return this.fileShareDomainMapper.mapToDomainModel(fileShare, files);
   }
 }

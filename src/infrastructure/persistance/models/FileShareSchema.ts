@@ -11,9 +11,9 @@ export class FileShare {
   message: string;
   @Prop({ required: true })
   quotaBytes: number;
-  @Prop({ required: true })
+  @Prop({ required: true, default: 9 })
   quotaSlots: number;
-  @Prop({ required: true })
+  @Prop({ required: true, default: 9 })
   visibleSlots: number;
   @Prop({ required: true })
   subscriptionHash: string;

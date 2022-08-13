@@ -21,8 +21,8 @@ export class CreateFileShareCommandHandler
         id: command.shareID,
         slots: [],
         quotaBytes: 99999,
-        quotaSlots: 20,
-        visibleSlots: 20,
+        quotaSlots: 9,
+        visibleSlots: 9,
         subscriptionHash: 'SUNRISE_BETA',
       }),
     );

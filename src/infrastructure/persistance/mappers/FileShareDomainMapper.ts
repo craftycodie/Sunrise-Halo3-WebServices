@@ -18,12 +18,14 @@ export default class FileShareDomainMapper {
     fileShare: FileShareModel,
     files: FileModel[],
   ): FileShare {
-    const mappedFiles: FileShareSlot[] = files.map((file) => new FileShareSlot({
-        uniqueId: new UniqueID(file.uniqueId),
-        slotNumber: new SlotNumber(file.slotNumber),
-        data: file.data,
-        header: file.header,
-      }),
+    const mappedFiles: FileShareSlot[] = files.map(
+      (file) =>
+        new FileShareSlot({
+          uniqueId: new UniqueID(file.uniqueId),
+          slotNumber: new SlotNumber(file.slotNumber),
+          data: file.data,
+          header: file.header,
+        }),
     );
 
     const aggregateAlbum = new FileShare({
