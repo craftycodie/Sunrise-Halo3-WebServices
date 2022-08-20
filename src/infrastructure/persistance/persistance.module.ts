@@ -15,6 +15,11 @@ import ScreenshotDomainMapper from './mappers/ScreenshotDomainMapper';
 import { IScreenshotRepositorySymbol } from 'src/domain/repositories/IScreenshotRepository';
 import ScreenshotRepository from './repositories/ScreenshotRepository';
 import { Screenshot, ScreenshotSchema } from './models/ScreenshotSchema';
+import { IUserRepositorySymbol } from 'src/domain/repositories/IUserRepository';
+import { User, UserSchema } from './models/UserSchema';
+import UserPersistanceMapper from './mappers/UserPersistanceMapper';
+import UserDomainMapper from './mappers/UserDomainMapper';
+import UserRepository from './repositories/UserRepository';
 
 const persistanceSettings = new PersistanceSettings().get();
 
@@ -26,6 +31,8 @@ const persistanceSettings = new PersistanceSettings().get();
       { name: FileShareSlot.name, schema: FileShareSlotSchema },
 
       { name: Screenshot.name, schema: ScreenshotSchema },
+
+      { name: User.name, schema: UserSchema },
     ]),
   ],
   providers: [
@@ -42,7 +49,18 @@ const persistanceSettings = new PersistanceSettings().get();
     },
     ScreenshotPersistanceMapper,
     ScreenshotDomainMapper,
+
+    {
+      provide: IUserRepositorySymbol,
+      useClass: UserRepository,
+    },
+    UserPersistanceMapper,
+    UserDomainMapper,
   ],
-  exports: [IFileShareRepositorySymbol, IScreenshotRepositorySymbol],
+  exports: [
+    IFileShareRepositorySymbol,
+    IScreenshotRepositorySymbol,
+    IUserRepositorySymbol,
+  ],
 })
 export class PersistanceModule {}

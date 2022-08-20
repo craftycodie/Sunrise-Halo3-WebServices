@@ -14,20 +14,15 @@ import { join } from 'path';
 import { ApiParam, ApiTags } from '@nestjs/swagger';
 import { stat } from 'fs/promises';
 import { Response } from 'express';
-import Color from 'src/domain/value-objects/Color';
-import PlayerModel from 'src/domain/value-objects/PlayerModel';
-import SpartanHelmet from 'src/domain/value-objects/SpartanHelmet';
-import SpartanShoulder from 'src/domain/value-objects/SpartanShoulder';
-import SpartanBody from 'src/domain/value-objects/SpartanBody';
-import EliteArmour from 'src/domain/value-objects/EliteArmour';
-import Rank from 'src/domain/value-objects/Rank';
 import ServiceRecord from '../blf/ServiceRecord';
 import PlayerData from '../blf/PlayerData';
 import UserBans from '../blf/UserBans';
 import FileQueue from '../blf/FileQueue';
-import BlfHeader from '../blf/BlfHeader';
-import BlfFooter from '../blf/BlfFooter';
 import { getBuffer } from '../blf/UserFile';
+import { GetUserQuery } from 'src/application/queries/GetUserQuery';
+import UserID from 'src/domain/value-objects/UserId';
+import User from 'src/domain/aggregates/User';
+import { CreateUserCommand } from 'src/application/commands/CreateUserCommand';
 
 @ApiTags('User Storage')
 @Controller('/storage/user')
@@ -44,68 +39,77 @@ export class UserStorageController {
     @Param('xuid') xuid: string,
     @Res({ passthrough: true }) res: Response,
   ) {
+    let user: User = await this.queryBus.execute(
+      new GetUserQuery(new UserID(xuid)),
+    );
+
+    if (!user)
+      user = await this.commandBus.execute(
+        new CreateUserCommand(new UserID(xuid)),
+      );
+
     const srid = new ServiceRecord();
     srid.playerName = 'Placeholder';
-    srid.appearanceFlags = 0;
-    srid.primaryColor = Color.GREEN;
-    srid.secondaryColor = Color.GREEN;
-    srid.tertiaryColor = Color.GREEN;
-    srid.model = PlayerModel.SPARTAN;
-    srid.foregroundEmblem = 1;
-    srid.backgroundEmblem = 1;
-    srid.emblemFlags = 0;
-    srid.emblemPrimaryColor = Color.YELLOW;
-    srid.emblemSecondaryColor = Color.BROWN;
-    srid.emblemBackgroundColor = Color.GREEN;
-    srid.spartanHelmet = SpartanHelmet.DEFAULT;
-    srid.spartanLeftShounder = SpartanShoulder.DEFAULT;
-    srid.spartanRightShoulder = SpartanShoulder.DEFAULT;
-    srid.spartanBody = SpartanBody.DEFAULT;
-    srid.eliteHelmet = EliteArmour.DEFAULT;
-    srid.eliteLeftShoulder = EliteArmour.DEFAULT;
-    srid.eliteRightShoulder = EliteArmour.DEFAULT;
-    srid.eliteBody = EliteArmour.DEFAULT;
-    srid.serviceTag = 'TEST';
-    srid.campaignProgress = 0;
-    srid.highestSkill = 1;
-    srid.totalEXP = 1;
-    srid.unknownInsignia = 0;
-    srid.rank = Rank.RECRUIT;
-    srid.grade = 0;
-    srid.unknownInsignia2 = 0;
+    srid.appearanceFlags = user.serviceRecord.appearanceFlags;
+    srid.primaryColor = user.serviceRecord.primaryColor;
+    srid.secondaryColor = user.serviceRecord.secondaryColor;
+    srid.tertiaryColor = user.serviceRecord.tertiaryColor;
+    srid.model = user.serviceRecord.model;
+    srid.foregroundEmblem = user.serviceRecord.foregroundEmblem;
+    srid.backgroundEmblem = user.serviceRecord.backgroundEmblem;
+    srid.emblemFlags = user.serviceRecord.emblemFlags;
+    srid.emblemPrimaryColor = user.serviceRecord.emblemPrimaryColor;
+    srid.emblemSecondaryColor = user.serviceRecord.emblemSecondaryColor;
+    srid.emblemBackgroundColor = user.serviceRecord.emblemBackgroundColor;
+    srid.spartanHelmet = user.serviceRecord.spartanHelmet;
+    srid.spartanLeftShounder = user.serviceRecord.spartanLeftShounder;
+    srid.spartanRightShoulder = user.serviceRecord.spartanRightShoulder;
+    srid.spartanBody = user.serviceRecord.spartanBody;
+    srid.eliteHelmet = user.serviceRecord.eliteHelmet;
+    srid.eliteLeftShoulder = user.serviceRecord.eliteLeftShoulder;
+    srid.eliteRightShoulder = user.serviceRecord.eliteRightShoulder;
+    srid.eliteBody = user.serviceRecord.eliteBody;
+    srid.serviceTag = user.serviceRecord.serviceTag;
+    srid.campaignProgress = user.serviceRecord.campaignProgress;
+    srid.highestSkill = user.serviceRecord.highestSkill;
+    srid.totalEXP = user.serviceRecord.totalEXP;
+    srid.unknownInsignia = user.serviceRecord.unknownInsignia;
+    srid.rank = user.serviceRecord.rank;
+    srid.grade = user.serviceRecord.grade;
+    srid.unknownInsignia2 = user.serviceRecord.unknownInsignia2;
 
     const fupd = new PlayerData();
-    fupd.hopperAccess = 1;
-    fupd.bungieUserRole = 1;
-    fupd.highestSkill = 1;
-    fupd.hopperDirectory = 'test_hoppers';
+    fupd.hopperAccess = user.playerData.hopperAccess;
+    fupd.bungieUserRole = 0;
+    if (user.playerData.isBnetUser) fupd.bungieUserRole += 1;
+    if (user.playerData.isPro) fupd.bungieUserRole += 2;
+    if (user.playerData.isBungie) fupd.bungieUserRole += 4;
+    if (user.playerData.hasRecon) fupd.bungieUserRole += 8;
+    fupd.highestSkill = user.serviceRecord.highestSkill;
+    fupd.hopperDirectory = user.playerData.hopperDirectory;
 
     const fubh = new UserBans();
-    fubh.bans = [
-      {
-        banType: 1,
-        banMessageIndex: 0,
-        startTime: BigInt('1640995200'),
-        endTime: BigInt('1672531200'),
-      },
-    ];
+    fubh.bans = user.bans.map((ban) => ({
+      banType: ban.banType,
+      banMessageIndex: ban.banMessageIndex.value,
+      startTime: BigInt(ban.startTime.getTime() / 1000),
+      endTime: BigInt(ban.endTime.getTime() / 1000),
+    }));
 
     const filq = new FileQueue();
-    filq.transfers = [
-      {
-        shareXuid: BigInt('0xffffffffffffff01'),
-        fileName: 'Test Transfer',
-        mapId: 30,
-        slot: 1,
-        unknownC: 0,
-        unknown3C: 0,
-        unknown44: 0,
-        unknown48: 0,
-        sizeBytes: 100000,
-        serverId: BigInt('1'),
-        fileType: 11,
-      },
-    ];
+    filq.transfers = user.transfers.map((transfer) => ({
+      shareXuid: BigInt(transfer.shareId.value),
+      fileName: transfer.fileName,
+      mapId: transfer.mapId ?? 0,
+      slot: transfer.slot.value,
+      unknownC: 0,
+      unknown3C: 0,
+      unknown44: 0,
+      unknown48: 0,
+      sizeBytes: transfer.sizeBytes,
+      serverId: BigInt('1'),
+      fileType: transfer.fileType,
+    }));
 
     return new StreamableFile(getBuffer(srid, fupd, fubh, filq));
   }

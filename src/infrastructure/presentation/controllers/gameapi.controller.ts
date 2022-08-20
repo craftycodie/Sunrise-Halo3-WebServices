@@ -28,6 +28,7 @@ import SlotNumber from 'src/domain/value-objects/SlotNumber';
 import FileShareSlot from 'src/domain/entities/FileShareSlot';
 import { DeleteFileCommand } from 'src/application/commands/DeleteFileCommand';
 import { UploadScreenshotCommand } from 'src/application/commands/UploadScreenshotCommand';
+import { UpdateHighestSkillCommand } from 'src/application/commands/UpdateHighestSkillCommand';
 
 const mapFileshareToResponse = (fileshare: FileShare) => {
   return `QuotaBytes: ${fileshare.quotaBytes}
@@ -174,19 +175,20 @@ export class GameApiController {
     @Query('userId') userID,
     @Query('locale') locale,
   ) {
-    return `Status: Subscribed
-NextOfferID: 1
-HQButton: Bungie Pro
-HQMessage: Expand your file share with Bungie Pro!
-FileShareButton: Get Bungie Pro!
-FileShareMessage: Expand your file share to 24 slots and 250 Megabytes of forged maps, saved films, screenshots or gametypes!
-FileShareHelp: Press A to view Bungie Pro offers.
-JustSubscribedMessage: Welcome to Bungie Pro!
-CurrentlySubscribedMessage: You already have an active Bungie Pro subscription.
-OverQuotaMessage: You have exceeded your file-share quote. Please make more space before uploading new files.
-SubscriptionSecondsPast19700101: 1660963276
-SubscriptionHash: 1
-`;
+    return `Status: NeverSubscribed`;
+    //     return `Status: Subscribed
+    // NextOfferID: 1
+    // HQButton: Bungie Pro
+    // HQMessage: Expand your file share with Bungie Pro!
+    // FileShareButton: Get Bungie Pro!
+    // FileShareMessage: Expand your file share to 24 slots and 250 Megabytes of forged maps, saved films, screenshots or gametypes!
+    // FileShareHelp: Press A to view Bungie Pro offers.
+    // JustSubscribedMessage: Welcome to Bungie Pro!
+    // CurrentlySubscribedMessage: You already have an active Bungie Pro subscription.
+    // OverQuotaMessage: You have exceeded your file-share quote. Please make more space before uploading new files.
+    // SubscriptionSecondsPast19700101: 1660963276
+    // SubscriptionHash: 1
+    // `;
   }
 
   uncuckBungieHeader(header: string) {
@@ -340,6 +342,9 @@ InitialUrl: /gameapi/FilesDownload.ashx?userId=${userID}&shareId=${shareID}&slot
     @Query('userId') userID,
     @Query('highestSkill') highestSkill,
   ) {
+    this.commandBus.execute(
+      new UpdateHighestSkillCommand(new UserID(userID), parseInt(highestSkill)),
+    );
     return;
   }
 
@@ -350,7 +355,7 @@ InitialUrl: /gameapi/FilesDownload.ashx?userId=${userID}&shareId=${shareID}&slot
   async userBeginConsume(
     @Query('title') titleID,
     @Query('userId') userID,
-    @Query('consumableId') highestSkill,
+    @Query('consumableId') consumableId,
   ) {
     return;
   }
@@ -362,7 +367,7 @@ InitialUrl: /gameapi/FilesDownload.ashx?userId=${userID}&shareId=${shareID}&slot
   async userCompleteConsume(
     @Query('title') titleID,
     @Query('userId') userID,
-    @Query('consumableId') highestSkill,
+    @Query('consumableId') consumableId,
   ) {
     return;
   }

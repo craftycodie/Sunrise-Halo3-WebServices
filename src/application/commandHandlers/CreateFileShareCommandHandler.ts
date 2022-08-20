@@ -23,7 +23,6 @@ export class CreateFileShareCommandHandler
         quotaBytes: 26214400,
         quotaSlots: 6,
         visibleSlots: 6,
-        subscriptionHash: 'SUNRISE_BETA',
       }),
     );
   }

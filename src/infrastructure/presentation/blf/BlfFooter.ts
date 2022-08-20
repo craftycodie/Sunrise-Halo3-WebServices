@@ -5,7 +5,7 @@ export default class BlfFooter {
 
   toBuffer = () => {
     const eofBytes = new Uint8Array(0x11);
-    eofBytes.set(Buffer.from('_blf', 'utf8'), 0);
+    eofBytes.set(Buffer.from('_eof', 'utf8'), 0);
     eofBytes.set(toBytesInt32(eofBytes.length), 4);
     eofBytes.set(toBytesInt16(1), 8);
     eofBytes.set(toBytesInt16(1), 10);

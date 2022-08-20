@@ -8,17 +8,23 @@ import { UploadScreenshotCommandHandler } from './commandHandlers/UploadScreensh
 import { GetPlayerScreenshotsQueryHandler } from './queryHandlers/GetPlayerScreenshotsQueryHandler';
 import { GetScreenshotQueryHandler } from './queryHandlers/GetScreenshotQueryHandler';
 import { GetFileshareQueryHandler } from './queryHandlers/GetFileshareQueryHandler';
+import { GetUserQueryHandler } from './queryHandlers/GetUserQueryHandler';
+import { CreateUserCommandHandler } from './commandHandlers/CreateUserCommandHandler';
+import { UpdateHighestSkillCommandHandler } from './commandHandlers/UpdateHighestSkillCommandHandler';
 
 export const QueryHandlers = [
   GetFileshareQueryHandler,
   GetScreenshotQueryHandler,
   GetPlayerScreenshotsQueryHandler,
+  GetUserQueryHandler,
 ];
 export const CommandHandlers = [
   CreateFileShareCommandHandler,
   UploadFileCommandHandler,
   DeleteFileCommandHandler,
   UploadScreenshotCommandHandler,
+  CreateUserCommandHandler,
+  UpdateHighestSkillCommandHandler,
 ];
 
 @Module({

@@ -13,7 +13,7 @@ interface FileShareProps {
   quotaBytes: number;
   quotaSlots: number;
   visibleSlots: number;
-  subscriptionHash: string;
+  subscriptionHash?: string;
 }
 
 export default class FileShare implements FileShareProps {
@@ -29,7 +29,7 @@ export default class FileShare implements FileShareProps {
   quotaBytes: number;
   quotaSlots: number;
   visibleSlots: number;
-  subscriptionHash: string;
+  subscriptionHash?: string;
 
   uploadFile(slot: FileShareSlot): void {
     this.deleteFile(slot.slotNumber);

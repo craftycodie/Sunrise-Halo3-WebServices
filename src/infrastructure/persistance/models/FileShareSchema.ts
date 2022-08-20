@@ -17,7 +17,6 @@ export class FileShare {
   quotaSlots: number;
   @Prop({ required: true, default: 9 })
   visibleSlots: number;
-  @Prop({ required: true })
   subscriptionHash: string;
 }
 
