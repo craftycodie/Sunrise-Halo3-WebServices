@@ -4,6 +4,7 @@ import {
   Get,
   Headers,
   Inject,
+  NotFoundException,
   Post,
   Query,
   StreamableFile,
@@ -222,6 +223,8 @@ export class GameApiController {
       new GetFileshareQuery(new UserID(shareID)),
     );
 
+    if (!fileshare) throw new NotFoundException('File share not found.');
+
     return new StreamableFile(fileshare.getFileData(new SlotNumber(slot)));
   }
 
@@ -299,10 +302,20 @@ InitialUrl: /gameapi/FilesDownload.ashx?userId=${userID}&shareId=${shareID}&slot
   }
 
   @Post('/MachineUpdateNetworkStats.ashx')
+  @UseInterceptors(FileInterceptor('upload'))
   async machineUpdateNetworkStats(
-    @Query('title') titleID,
-    @Query('machineId') machineID,
+    @Headers('title') titleID,
+    @Headers('machineId') machineID,
+    @UploadedFile() upload: Express.Multer.File,
   ) {
+    await writeFile(
+      join(
+        process.cwd(),
+        'uploads/machinenetworkstats',
+        this.uncuckBungieHeader(machineID) + '.bin',
+      ),
+      upload.buffer,
+    );
     return;
   }
 
