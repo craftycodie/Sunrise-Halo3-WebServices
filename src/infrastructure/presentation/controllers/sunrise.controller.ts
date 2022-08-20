@@ -51,7 +51,7 @@ export class SunriseController {
         ${screenshots
           .map(
             (screenshot) =>
-              `<img height="450" src="/sunrise/screenshot/${screenshot.id.value}"/>`,
+              `<img height="450" src="/sunrise/screenshot/${screenshot.id.value}.jpg"/>`,
           )
           .join('')}
     </body>
@@ -245,6 +245,7 @@ export class SunriseController {
     @Res({ passthrough: true }) res: Response,
     @Param('id') id: string,
   ) {
+    id = id.replace('.jpg', '');
     const screenshot: Screenshot | undefined = await this.queryBus.execute(
       new GetScreenshotQuery(Uuid.create(id.toString())),
     );
