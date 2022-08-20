@@ -8,11 +8,7 @@ Webserver for Halo 3
 
 ```env
   API_PORT=8080
-  DB_HOST=127.0.0.1
-  DB_PORT=3306
-  DB_USER=root
-  DB_PASSWORD=root
-  DB_NAME=sunrise
+  MONGO_URI
 ```
 
 3. Build the web service with the `npm run build` command.
@@ -40,36 +36,12 @@ $ npm run start:prod
 In the case of port conflicts, review/edit the `docker-compose.yml` file accordingly.
 The docker container is built with seeding for demo purposes. If desired this can be removed from the `Dockerfile`.
 
-## Continuous Integration / Delivery
-
-A basic AppVeyor pipeline has been included in this project.
-The pipeline simply builds the JavaScript, uploads the "dist" folder as an artifact and calls a webhook.
-
-The pipeline does not build or push the docker image, or actually deploy anywhere, if deployment is required, a deployment webhook may suite.
-
 ## Documentation
 
 Once the app is running, swagger documentation can be found at the /api route.
 eg. if you are running the web service locally, navigate to http://localhost:8080/api
 
-## Test
-
-```bash
-# unit tests
-$ npm run test
-
-# e2e tests
-$ npm run test:e2e
-
-# test coverage
-$ npm run test:cov
-```
-
-## Support
-
-contact Codie Stella for support.
-
 
 ---
 
-Last Updated 08/08/22 by Codie Stella 🐧
+Last Updated 13/08/22 by Codie Stella 🐧
