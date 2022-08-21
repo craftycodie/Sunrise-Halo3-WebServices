@@ -3,6 +3,7 @@ import {
   Controller,
   Inject,
   Post,
+  Res,
   UploadedFile,
   UseInterceptors,
 } from '@nestjs/common';
@@ -13,6 +14,7 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { writeFile } from 'fs/promises';
 import { join } from 'path';
 import { inflate } from 'pako';
+import { Response } from 'express';
 
 @ApiTags('Upload Server')
 @Controller('/upload_server')
@@ -25,7 +27,10 @@ export class UploadServerController {
 
   @Post('/stats.ashx')
   @UseInterceptors(FileInterceptor('upload'))
-  async uploadStats(@UploadedFile() upload: Express.Multer.File) {
+  async uploadStats(
+    @UploadedFile() upload: Express.Multer.File,
+    @Res({ passthrough: true }) res: Response,
+  ) {
     if (!upload.mimetype.startsWith('application/x-halo3-'))
       throw new BadRequestException(`Unrecognized file!`);
 
@@ -41,16 +46,20 @@ export class UploadServerController {
       inflate(upload.buffer.subarray(12)),
     );
 
-    return;
+    res.status(200).send('');
   }
 
   @Post('/upload.ashx')
   @UseInterceptors(FileInterceptor('upload'))
-  async uploadDump(@UploadedFile() upload: Express.Multer.File) {
+  async uploadDump(
+    @UploadedFile() upload: Express.Multer.File,
+    @Res({ passthrough: true }) res: Response,
+  ) {
     await writeFile(
       join(process.cwd(), 'uploads/crashes', upload.originalname),
       upload.buffer,
     );
-    return;
+
+    res.status(200).send('');
   }
 }

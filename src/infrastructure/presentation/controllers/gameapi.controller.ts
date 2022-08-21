@@ -7,6 +7,7 @@ import {
   NotFoundException,
   Post,
   Query,
+  Res,
   StreamableFile,
   UploadedFile,
   UseInterceptors,
@@ -29,6 +30,7 @@ import FileShareSlot from 'src/domain/entities/FileShareSlot';
 import { DeleteFileCommand } from 'src/application/commands/DeleteFileCommand';
 import { UploadScreenshotCommand } from 'src/application/commands/UploadScreenshotCommand';
 import { UpdateHighestSkillCommand } from 'src/application/commands/UpdateHighestSkillCommand';
+import { Response } from 'express';
 
 const mapFileshareToResponse = (fileshare: FileShare) => {
   return `QuotaBytes: ${fileshare.quotaBytes}
@@ -204,6 +206,7 @@ export class GameApiController {
     @Headers('shareid') shareID,
     @Headers('slot') slot,
     @Headers('serverid') serverId,
+    @Res({ passthrough: true }) res: Response,
   ) {
     const contentHeader = readContentHeader(upload.buffer.slice(0x3c, 0x138));
 
@@ -222,7 +225,7 @@ export class GameApiController {
       ),
     );
 
-    return upload.size;
+    res.status(200).send('');
   }
 
   @Get('/FilesDownload.ashx')
@@ -250,6 +253,7 @@ export class GameApiController {
     @Headers('userid') userID,
     @Headers('gameid') gameID,
     @UploadedFile() upload: Express.Multer.File,
+    @Res({ passthrough: true }) res: Response,
   ) {
     if (upload.originalname == 'screen.blf') {
       const contentHeader = readContentHeader(upload.buffer.slice(0x3c, 0x138));
@@ -267,7 +271,7 @@ export class GameApiController {
         ),
       );
 
-      return upload.size;
+      res.status(200).send('');
     } else {
       await writeFile(
         join(process.cwd(), 'uploads/fileshare', upload.originalname),
@@ -321,6 +325,7 @@ InitialUrl: /gameapi/FilesDownload.ashx?userId=${userID}&shareId=${shareID}&slot
     @Headers('title') titleID,
     @Headers('machineId') machineID,
     @UploadedFile() upload: Express.Multer.File,
+    @Res({ passthrough: true }) res: Response,
   ) {
     await writeFile(
       join(
@@ -330,7 +335,7 @@ InitialUrl: /gameapi/FilesDownload.ashx?userId=${userID}&shareId=${shareID}&slot
       ),
       upload.buffer,
     );
-    return;
+    res.status(200).send('');
   }
 
   @Get('/UserUpdatePlayerStats.ashx')

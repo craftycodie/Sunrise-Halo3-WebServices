@@ -46,22 +46,13 @@ export default class FileShareRepository implements IFileShareRepository {
         { upsert: true, new: true },
       );
 
-      if (updatedFile == null) {
-        console.log({
-          shareID: file.shareID,
-          slot: file.slotNumber,
-          uniqueId: file.uniqueId,
-        });
-      }
-
       files.push(updatedFile);
     }
 
     //console.log(files.map((file) => (file ? { uniqueId: file.uniqueId, slot: file.slotNumber} : "no file")));
 
     await this.fileShareSlotModel.deleteMany({
-      shareID: target.id.value,
-      uniqueId: { $nin: persistanceFiles.map((file) => file.uniqueId) },
+      id: { $nin: persistanceFiles.map((file) => file.id) },
     });
 
     return this.fileShareDomainMapper.mapToDomainModel(fileShare, files);
