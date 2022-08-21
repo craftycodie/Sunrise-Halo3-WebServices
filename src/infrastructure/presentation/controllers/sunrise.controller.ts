@@ -240,7 +240,7 @@ export class SunriseController {
   }
 
   @Get('/screenshot/:id')
-  @Header('Content-Type', 'image/jpeg')
+  @Header('Content-Type', 'image/jpg')
   async screenshot(
     @Res({ passthrough: true }) res: Response,
     @Param('id') id: string,
@@ -263,7 +263,7 @@ export class SunriseController {
 
     screenshotBuffer = Buffer.from(screenshotBuffer.buffer.slice(0x2b8, -11));
 
-    res.set('Content-Length', screenshot.data.byteLength.toString());
+    res.set('Content-Length', screenshotBuffer.byteLength.toString());
     res.set('Cache-Control', 'no-cache');
     return new StreamableFile(screenshotBuffer);
   }
