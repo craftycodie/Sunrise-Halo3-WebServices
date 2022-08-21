@@ -52,6 +52,7 @@ export default class FileShareRepository implements IFileShareRepository {
     //console.log(files.map((file) => (file ? { uniqueId: file.uniqueId, slot: file.slotNumber} : "no file")));
 
     await this.fileShareSlotModel.deleteMany({
+      shareID: target.id.value,
       id: { $nin: persistanceFiles.map((file) => file.id) },
     });
 
