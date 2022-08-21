@@ -20,9 +20,9 @@ export class CreateFileShareCommandHandler
       FileShare.create({
         ownerId: command.shareID,
         slots: [],
-        quotaBytes: 26214400,
-        quotaSlots: 6,
-        visibleSlots: 6,
+        quotaBytes: 262144000,
+        quotaSlots: 25,
+        visibleSlots: 25,
       }),
     );
   }
