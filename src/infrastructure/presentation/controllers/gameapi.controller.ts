@@ -165,7 +165,7 @@ export class GameApiController {
     const fileShare: FileShare = await this.queryBus.execute(
       new GetFileshareQuery(new UserID(shareID), titleID, new UserID(userID)),
     );
-    return fileShare.getSlot(new SlotNumber(slot)).header.size;
+    return 0;
   }
 
   @Get('/UserGetBnetSubscription.ashx')
