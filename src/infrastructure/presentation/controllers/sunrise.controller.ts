@@ -342,13 +342,13 @@ export class SunriseController {
                   const gameVariant: GameVariantFile = await this.readJsonFile(
                     `./public/storage/title/tracked/12070/default_hoppers/${String(
                       configuration.identifier,
-                    ).padStart(5, '0')}/map_variants/${
-                      gameEntry.mapVariantFileName
-                    }_012.json`,
+                    ).padStart(5, '0')}/${
+                      gameEntry.gameVariantFileName
+                    }_010.json`,
                   );
 
                   gameEntry['mapVariant'] = mapVariant.mvar;
-                  gameEntry['gameVariant'] = gameVariant.gvar;
+                  gameEntry['gameVariant'] = Object.values(gameVariant.gvar)[0];
                 })();
               }),
             );
@@ -365,10 +365,32 @@ export class SunriseController {
 
       this.manifestModified = stat.mtime.getTime();
 
-      this.playlistsJson = {
-        categories: hoppersFile.mhcf.categories,
-        hoppers,
-      };
+      this.playlistsJson = [];
+
+      let categories: any[] = [
+        {
+          identifier: 0,
+          name: 'Ranked',
+          description: '',
+        },
+        {
+          identifier: 1,
+          name: 'Social',
+          description: '',
+        },
+      ];
+
+      categories = [...categories, ...hoppersFile.mhcf.categories];
+
+      this.playlistsJson = categories.map((category) => {
+        const categoryHoppers = hoppers.filter(
+          (hopper) => hopper.category == category.identifier,
+        );
+        return {
+          ...category,
+          hoppers: categoryHoppers,
+        };
+      });
     }
 
     return this.playlistsJson;
