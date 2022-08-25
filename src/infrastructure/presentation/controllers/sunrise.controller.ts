@@ -15,7 +15,7 @@ import {
 } from '@nestjs/common';
 import ILogger, { ILoggerSymbol } from '../../../ILogger';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiParam, ApiTags } from '@nestjs/swagger';
 import { readdir, readFile, stat } from 'fs/promises';
 import { join } from 'path';
 import { Response } from 'express';
@@ -35,6 +35,7 @@ import GameSetFile from '../types/GameSetFile';
 import MapVariantFile from '../types/MapVariantFile';
 import { statSync } from 'fs';
 import GameVariantFile from '../types/GameVariantFile';
+import { GetUserQuery } from 'src/application/queries/GetUserQuery';
 
 @ApiTags('Sunrise')
 @Controller('/sunrise')
@@ -282,7 +283,7 @@ export class SunriseController {
   private manifestModified: number;
   private playlistsJson: any;
 
-  @Get('/online/playlists.json')
+  @Get('/online/playlists')
   async playlists(): Promise<any> {
     const stat = statSync(
       './public/storage/title/tracked/12070/default_hoppers/manifest_001.bin',
@@ -394,5 +395,28 @@ export class SunriseController {
     }
 
     return this.playlistsJson;
+  }
+
+  @Get('/player/:xuid/fileshare')
+  @ApiParam({ name: 'xuid', example: '000901FC3FB8FE71' })
+  async getFileshare(@Param('xuid') userID) {
+    const fileshare = await this.queryBus.execute(
+      new GetFileshareQuery(UserID.create(userID)),
+    );
+    return {
+      ...fileshare,
+      slots: fileshare.slots.map((slot) => ({
+        ...slot,
+        data: undefined,
+      }))
+    }
+  }
+
+  @Get('/player/:xuid/servicerecord')
+  @ApiParam({ name: 'xuid', example: '000901FC3FB8FE71' })
+  async getServiceRecord(@Param('xuid') userID) {
+    return (
+      await this.queryBus.execute(new GetUserQuery(UserID.create(userID)))
+    ).serviceRecord;
   }
 }
