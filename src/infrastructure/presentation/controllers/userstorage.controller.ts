@@ -40,12 +40,12 @@ export class UserStorageController {
     @Res({ passthrough: true }) res: Response,
   ) {
     let user: User = await this.queryBus.execute(
-      new GetUserQuery(new UserID(xuid)),
+      new GetUserQuery(UserID.create(xuid)),
     );
 
     if (!user)
       user = await this.commandBus.execute(
-        new CreateUserCommand(new UserID(xuid)),
+        new CreateUserCommand(UserID.create(xuid)),
       );
 
     const srid = new ServiceRecord();

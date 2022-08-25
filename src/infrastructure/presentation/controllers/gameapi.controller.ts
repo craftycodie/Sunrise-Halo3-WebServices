@@ -120,9 +120,9 @@ export class GameApiController {
   ) {
     let fileshare = await this.queryBus.execute(
       new GetFileshareQuery(
-        new UserID(shareID),
+        UserID.create(shareID),
         parseInt(titleID),
-        new UserID(userID),
+        UserID.create(userID),
         new Locale(locale),
       ),
     );
@@ -131,8 +131,8 @@ export class GameApiController {
       fileshare = await this.commandBus.execute(
         new CreateFileShareCommand(
           parseInt(titleID),
-          new UserID(userID),
-          new UserID(shareID),
+          UserID.create(userID),
+          UserID.create(shareID),
         ),
       );
 
@@ -163,7 +163,11 @@ export class GameApiController {
     @Query('serverId') serverId,
   ) {
     const fileShare: FileShare = await this.queryBus.execute(
-      new GetFileshareQuery(new UserID(shareID), titleID, new UserID(userID)),
+      new GetFileshareQuery(
+        UserID.create(shareID),
+        titleID,
+        UserID.create(userID),
+      ),
     );
     return 0;
   }
@@ -217,8 +221,8 @@ export class GameApiController {
 
     await this.commandBus.execute(
       new UploadFileCommand(
-        new UserID(this.uncuckBungieHeader(userid)),
-        new UserID(this.uncuckBungieHeader(shareID)),
+        UserID.create(this.uncuckBungieHeader(userid)),
+        UserID.create(this.uncuckBungieHeader(shareID)),
         new SlotNumber(parseInt(this.uncuckBungieHeader(slot))),
         contentHeader,
         upload.buffer,
@@ -237,7 +241,7 @@ export class GameApiController {
     @Query('serverid') serverId,
   ) {
     const fileshare: FileShare = await this.queryBus.execute(
-      new GetFileshareQuery(new UserID(shareID)),
+      new GetFileshareQuery(UserID.create(shareID)),
     );
 
     if (!fileshare) throw new NotFoundException('File share not found.');
@@ -265,7 +269,7 @@ export class GameApiController {
 
       await this.commandBus.execute(
         new UploadScreenshotCommand(
-          new UserID(this.uncuckBungieHeader(userID)),
+          UserID.create(this.uncuckBungieHeader(userID)),
           contentHeader,
           upload.buffer,
         ),
@@ -312,8 +316,8 @@ InitialUrl: /gameapi/FilesDownload.ashx?userId=${userID}&shareId=${shareID}&slot
   ) {
     return await this.commandBus.execute(
       new DeleteFileCommand(
-        new UserID(userID),
-        new UserID(shareID),
+        UserID.create(userID),
+        UserID.create(shareID),
         new SlotNumber(slot),
       ),
     );
@@ -348,7 +352,10 @@ InitialUrl: /gameapi/FilesDownload.ashx?userId=${userID}&shareId=${shareID}&slot
     @Query('highestSkill') highestSkill,
   ) {
     this.commandBus.execute(
-      new UpdateHighestSkillCommand(new UserID(userID), parseInt(highestSkill)),
+      new UpdateHighestSkillCommand(
+        UserID.create(userID),
+        parseInt(highestSkill),
+      ),
     );
     return;
   }

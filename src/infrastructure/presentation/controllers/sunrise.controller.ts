@@ -29,6 +29,12 @@ import { GetPlayerScreenshotsQuery } from 'src/application/queries/GetPlayerScre
 import Screenshot from 'src/domain/aggregates/Screenshot';
 import { GetScreenshotQuery } from 'src/application/queries/GetScreenshotQuery';
 import Uuid from 'src/domain/value-objects/Uuid';
+import HopperConfigurationTableFile from '../types/HopperConfigurationTableFile';
+import HopperDescriptionsFile from '../types/HopperDescriptionsFile';
+import GameSetFile from '../types/GameSetFile';
+import MapVariantFile from '../types/MapVariantFile';
+import { statSync } from 'fs';
+import GameVariantFile from '../types/GameVariantFile';
 
 @ApiTags('Sunrise')
 @Controller('/sunrise')
@@ -42,7 +48,7 @@ export class SunriseController {
   @Get('/screenshots/:userId')
   async playerScreenshots(@Param('userId') userId: string) {
     const screenshots: Screenshot[] = await this.queryBus.execute(
-      new GetPlayerScreenshotsQuery(new UserID(userId)),
+      new GetPlayerScreenshotsQuery(UserID.create(userId)),
     );
     return `
 <html>
@@ -76,7 +82,7 @@ export class SunriseController {
     @Param('slot') slotNumber: string,
   ) {
     const fileShare: FileShare = await this.queryBus.execute(
-      new GetFileshareQuery(new UserID(shareId)),
+      new GetFileshareQuery(UserID.create(shareId)),
     );
 
     if (!fileShare) throw new NotFoundException();
@@ -171,7 +177,7 @@ export class SunriseController {
 
   //     slot.data = newBlf;
 
-  //     await this.commandBus.execute(new UploadFileCommand(new UserID(shareId), new ShareID(shareId), slot.slotNumber, slot.header, newBlf));
+  //     await this.commandBus.execute(new UploadFileCommand(UserID.create(shareId), new ShareID(shareId), slot.slotNumber, slot.header, newBlf));
 
   //     res.set('Content-Length', newBlf.byteLength.toString());
   //     res.set('Cache-Control', 'no-cache');
@@ -219,7 +225,7 @@ export class SunriseController {
 
   //     slot.data = newBlf;
 
-  //     await this.commandBus.execute(new UploadFileCommand(new UserID(shareId), new ShareID(shareId), slot.slotNumber, slot.header, newBlf));
+  //     await this.commandBus.execute(new UploadFileCommand(UserID.create(shareId), new ShareID(shareId), slot.slotNumber, slot.header, newBlf));
 
   //     res.set('Content-Length', newBlf.byteLength.toString());
   //     res.set('Cache-Control', 'no-cache');
@@ -266,5 +272,105 @@ export class SunriseController {
     res.set('Content-Length', screenshotBuffer.byteLength.toString());
     res.set('Cache-Control', 'no-cache');
     return new StreamableFile(screenshotBuffer);
+  }
+
+  async readJsonFile(path) {
+    const file = await readFile(path, 'utf8');
+    return JSON.parse(file);
+  }
+
+  private manifestModified: number;
+  private playlistsJson: any;
+
+  @Get('/online/playlists.json')
+  async playlists(): Promise<any> {
+    const stat = statSync(
+      './public/storage/title/tracked/12070/default_hoppers/manifest_001.bin',
+    );
+    if (stat.mtime.getTime() != this.manifestModified) {
+      const hoppersFile: HopperConfigurationTableFile = await this.readJsonFile(
+        './public/storage/title/tracked/12070/default_hoppers/matchmaking_hopper_011.json',
+      );
+
+      const descriptionsFile: HopperDescriptionsFile = await this.readJsonFile(
+        './public/storage/title/tracked/12070/default_hoppers/en/matchmaking_hopper_descriptions_003.json',
+      );
+
+      descriptionsFile.mhdf.descriptions.map((description) => {
+        if (description.identifier < 100) {
+          const categoryIndex = hoppersFile.mhcf.categories.findIndex(
+            (category) => category.identifier == description.identifier,
+          );
+          if (categoryIndex != -1)
+            hoppersFile.mhcf.categories[categoryIndex]['description'] =
+              description.description;
+        } else {
+          const configurationIndexIndex =
+            hoppersFile.mhcf.configurations.findIndex(
+              (configuration) =>
+                configuration.identifier == description.identifier,
+            );
+          if (configurationIndexIndex != -1)
+            hoppersFile.mhcf.configurations[configurationIndexIndex][
+              'description'
+            ] = description.description;
+        }
+      });
+
+      const gameSets = {};
+
+      await Promise.all(
+        hoppersFile.mhcf.configurations.map((configuration) => {
+          return (async () => {
+            const gameSet: GameSetFile = await this.readJsonFile(
+              `./public/storage/title/tracked/12070/default_hoppers/${String(
+                configuration.identifier,
+              ).padStart(5, '0')}/game_set_006.json`,
+            );
+
+            await Promise.all(
+              gameSet.gset.gameEntries.map((gameEntry) => {
+                return (async () => {
+                  const mapVariant: MapVariantFile = await this.readJsonFile(
+                    `./public/storage/title/tracked/12070/default_hoppers/${String(
+                      configuration.identifier,
+                    ).padStart(5, '0')}/map_variants/${
+                      gameEntry.mapVariantFileName
+                    }_012.json`,
+                  );
+
+                  const gameVariant: GameVariantFile = await this.readJsonFile(
+                    `./public/storage/title/tracked/12070/default_hoppers/${String(
+                      configuration.identifier,
+                    ).padStart(5, '0')}/map_variants/${
+                      gameEntry.mapVariantFileName
+                    }_012.json`,
+                  );
+
+                  gameEntry['mapVariant'] = mapVariant.mvar;
+                  gameEntry['gameVariant'] = gameVariant.gvar;
+                })();
+              }),
+            );
+
+            gameSets[configuration.identifier] = gameSet.gset;
+          })();
+        }),
+      );
+
+      const hoppers = hoppersFile.mhcf.configurations.map((configuration) => ({
+        ...configuration,
+        gameEntries: gameSets[configuration.identifier].gameEntries,
+      }));
+
+      this.manifestModified = stat.mtime.getTime();
+
+      this.playlistsJson = {
+        categories: hoppersFile.mhcf.categories,
+        hoppers,
+      };
+    }
+
+    return this.playlistsJson;
   }
 }
