@@ -9,6 +9,7 @@ import Uuid from '../value-objects/Uuid';
 
 export interface ServiceRecordProps {
   id: Uuid;
+  playerName: string;
   appearanceFlags: number; // includes gender
   primaryColor: Color;
   secondaryColor: Color;
@@ -44,6 +45,7 @@ export default class ServiceRecord implements ServiceRecordProps {
   }
 
   id: Uuid;
+  playerName: string;
   appearanceFlags: number; // includes gender
   primaryColor: Color;
   secondaryColor: Color;
@@ -72,8 +74,8 @@ export default class ServiceRecord implements ServiceRecordProps {
   grade: number;
   unknownInsignia2: number;
 
-  public setHighestSkill = (highestSkill: number) => {
-    this.highestSkill = highestSkill;
+  public update = (serviceRecord: Partial<Omit<ServiceRecordProps, 'id'>>) => {
+    Object.assign(this, serviceRecord);
   };
 
   static create(props: Omit<ServiceRecordProps, 'id'>): ServiceRecord {

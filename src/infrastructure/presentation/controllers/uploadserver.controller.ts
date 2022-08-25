@@ -15,6 +15,9 @@ import { writeFile } from 'fs/promises';
 import { join } from 'path';
 import { inflate } from 'pako';
 import { Response } from 'express';
+import { readPlayers } from '../blf/MultiplayerPlayers';
+import { UpdateServiceRecordCommand } from 'src/application/commands/UpdateServiceRecordCommand';
+import UserID from 'src/domain/value-objects/UserId';
 
 @ApiTags('Upload Server')
 @Controller('/upload_server')
@@ -35,6 +38,23 @@ export class UploadServerController {
       throw new BadRequestException(`Unrecognized file!`);
 
     const filetype = upload.mimetype.replace('application/x-halo3-', '');
+
+    if (filetype === 'multi') {
+      const blf = inflate(upload.buffer.subarray(12));
+
+      const players = readPlayers(blf.slice(0x4e4, 0x4e4 + 0x11e0));
+
+      for (let i = 0; i < players.length; i++) {
+        const player = players[i];
+        // guests
+        if (player.playerName.endsWith(')')) continue;
+        this.commandBus.execute(
+          await new UpdateServiceRecordCommand(UserID.create(player.xuid), {
+            ...player,
+          }),
+        );
+      }
+    }
 
     await writeFile(
       join(

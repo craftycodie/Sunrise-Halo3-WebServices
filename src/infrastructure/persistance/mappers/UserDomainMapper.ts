@@ -73,6 +73,7 @@ export default class UserDomainMapper {
   private mapServiceRecord(serviceRecord: ServiceRecordModel): ServiceRecord {
     return new ServiceRecord({
       id: new Uuid(serviceRecord.id),
+      playerName: serviceRecord.playerName,
       appearanceFlags: serviceRecord.appearanceFlags,
       primaryColor: serviceRecord.primaryColor,
       secondaryColor: serviceRecord.secondaryColor,

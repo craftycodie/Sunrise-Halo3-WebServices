@@ -29,7 +29,7 @@ import SlotNumber from 'src/domain/value-objects/SlotNumber';
 import FileShareSlot from 'src/domain/entities/FileShareSlot';
 import { DeleteFileCommand } from 'src/application/commands/DeleteFileCommand';
 import { UploadScreenshotCommand } from 'src/application/commands/UploadScreenshotCommand';
-import { UpdateHighestSkillCommand } from 'src/application/commands/UpdateHighestSkillCommand';
+import { UpdateServiceRecordCommand } from 'src/application/commands/UpdateServiceRecordCommand';
 import { Response } from 'express';
 
 const mapFileshareToResponse = (fileshare: FileShare) => {
@@ -352,10 +352,9 @@ InitialUrl: /gameapi/FilesDownload.ashx?userId=${userID}&shareId=${shareID}&slot
     @Query('highestSkill') highestSkill,
   ) {
     this.commandBus.execute(
-      new UpdateHighestSkillCommand(
-        UserID.create(userID),
-        parseInt(highestSkill),
-      ),
+      new UpdateServiceRecordCommand(UserID.create(userID), {
+        highestSkill: parseInt(highestSkill),
+      }),
     );
     return;
   }

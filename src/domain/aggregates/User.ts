@@ -1,5 +1,5 @@
 import Ban from '../entities/Ban';
-import ServiceRecord from '../entities/ServiceRecord';
+import ServiceRecord, { ServiceRecordProps } from '../entities/ServiceRecord';
 import Transfer from '../entities/Transfer';
 import UserID from '../value-objects/UserId';
 import Uuid from '../value-objects/Uuid';
@@ -26,8 +26,10 @@ export default class User implements UserProps {
   serviceRecord: ServiceRecord;
   playerData: PlayerData;
 
-  public setHighestSkill = (highestSkill: number) => {
-    this.serviceRecord.setHighestSkill(highestSkill);
+  public updateServiceRecord = (
+    serviceRecord: Partial<Omit<ServiceRecordProps, 'id'>>,
+  ) => {
+    this.serviceRecord.update(serviceRecord);
   };
 
   static create(props: Omit<UserProps, 'id'>): User {

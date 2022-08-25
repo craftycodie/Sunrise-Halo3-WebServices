@@ -40,6 +40,7 @@ export class CreateUserCommandHandler
         }),
         serviceRecord: ServiceRecord.create({
           appearanceFlags: 0,
+          playerName: '',
           primaryColor: Color.GREEN,
           secondaryColor: Color.GREEN,
           tertiaryColor: Color.GREEN,
@@ -58,7 +59,7 @@ export class CreateUserCommandHandler
           eliteLeftShoulder: EliteArmour.DEFAULT,
           eliteRightShoulder: EliteArmour.DEFAULT,
           eliteBody: EliteArmour.DEFAULT,
-          serviceTag: 'TEST',
+          serviceTag: '',
           campaignProgress: 0,
           highestSkill: 1,
           totalEXP: 1,

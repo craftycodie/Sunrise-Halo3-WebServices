@@ -9,6 +9,8 @@ export class ServiceRecord {
   id: string;
 
   @Prop({ required: true })
+  playerName: string; // includes gender
+  @Prop({ required: true })
   appearanceFlags: number; // includes gender
   @Prop({ required: true })
   primaryColor: number;

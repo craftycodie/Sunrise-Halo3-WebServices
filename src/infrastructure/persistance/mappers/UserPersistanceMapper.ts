@@ -35,6 +35,7 @@ export default class UserPersistanceMapper {
       },
       serviceRecord: {
         id: user.serviceRecord.id.value,
+        playerName: user.serviceRecord.playerName,
         appearanceFlags: user.serviceRecord.appearanceFlags,
         primaryColor: user.serviceRecord.primaryColor,
         secondaryColor: user.serviceRecord.secondaryColor,

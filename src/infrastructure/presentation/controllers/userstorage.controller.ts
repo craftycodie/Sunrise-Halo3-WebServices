@@ -49,7 +49,7 @@ export class UserStorageController {
       );
 
     const srid = new ServiceRecord();
-    srid.playerName = 'Placeholder';
+    srid.playerName = user.serviceRecord.playerName ?? '';
     srid.appearanceFlags = user.serviceRecord.appearanceFlags;
     srid.primaryColor = user.serviceRecord.primaryColor;
     srid.secondaryColor = user.serviceRecord.secondaryColor;

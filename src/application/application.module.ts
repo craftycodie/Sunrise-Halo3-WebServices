@@ -10,7 +10,7 @@ import { GetScreenshotQueryHandler } from './queryHandlers/GetScreenshotQueryHan
 import { GetFileshareQueryHandler } from './queryHandlers/GetFileshareQueryHandler';
 import { GetUserQueryHandler } from './queryHandlers/GetUserQueryHandler';
 import { CreateUserCommandHandler } from './commandHandlers/CreateUserCommandHandler';
-import { UpdateHighestSkillCommandHandler } from './commandHandlers/UpdateHighestSkillCommandHandler';
+import { UpdateServiceRecordCommandHandler } from './commandHandlers/UpdateServiceRecordCommandHandler';
 
 export const QueryHandlers = [
   GetFileshareQueryHandler,
@@ -24,7 +24,7 @@ export const CommandHandlers = [
   DeleteFileCommandHandler,
   UploadScreenshotCommandHandler,
   CreateUserCommandHandler,
-  UpdateHighestSkillCommandHandler,
+  UpdateServiceRecordCommandHandler,
 ];
 
 @Module({

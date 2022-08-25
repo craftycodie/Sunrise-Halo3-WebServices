@@ -12,6 +12,6 @@ export default class UserID extends TinyTypeOf<string>() {
       throw new Error(`Invalid user ID string ${value}.`);
     }
 
-    return new UserID(value);
+    return new UserID(value.toUpperCase());
   }
 }
