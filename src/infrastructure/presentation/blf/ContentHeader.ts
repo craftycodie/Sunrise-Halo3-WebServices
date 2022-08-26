@@ -28,7 +28,7 @@ export function readContentHeader(arrayBuffer: ArrayBuffer): ContentHeader {
       .replace(/[\x00]/g, ''),
     filetype: readNumber(arrayBuffer.slice(0xbc, 0xc0)),
     authorXuidIsOnline: arrayBuffer[0xc0] > 0,
-    authorXuid: readLong(arrayBuffer.slice(0xc4, 0xcc)),
+    authorXuid: Buffer.from(arrayBuffer.slice(0xc4, 0xcc)).toString('hex'),
     size: 0, //something is wrong with this -> readLong(arrayBuffer.slice(0xcc, 0xdc)),
     date: readLong(arrayBuffer.slice(0xd4, 0xdc)),
     lengthSeconds: readNumber(arrayBuffer.slice(0xdc, 0xe0)),

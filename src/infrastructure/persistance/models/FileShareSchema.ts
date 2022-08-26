@@ -1,6 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document } from 'mongoose';
-import ContentHeader from '../../../domain/value-objects/ContentHeader';
+import { FileShareSlot, FileShareSlotSchema } from './FileShareSlotSchema';
 
 export type FileShareDocument = FileShare & Document;
 
@@ -18,6 +18,8 @@ export class FileShare {
   @Prop({ required: true, default: 9 })
   visibleSlots: number;
   subscriptionHash: string;
+  @Prop({ required: true, default: [], type: [FileShareSlotSchema] })
+  slots: FileShareSlot[];
 }
 
 export const FileShareSchema = SchemaFactory.createForClass(FileShare);

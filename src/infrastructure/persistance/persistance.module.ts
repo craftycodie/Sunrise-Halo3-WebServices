@@ -28,7 +28,6 @@ const persistanceSettings = new PersistanceSettings().get();
     MongooseModule.forRoot(persistanceSettings.mongoURI),
     MongooseModule.forFeature([
       { name: FileShare.name, schema: FileShareSchema },
-      { name: FileShareSlot.name, schema: FileShareSlotSchema },
 
       { name: Screenshot.name, schema: ScreenshotSchema },
 

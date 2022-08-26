@@ -19,8 +19,6 @@ export default class FileShareRepository implements IFileShareRepository {
     @Inject(ILoggerSymbol) private readonly logger: ILogger,
     @InjectModel(FileShare.name)
     private fileShareModel: Model<FileShareDocument>,
-    @InjectModel(FileShareSlot.name)
-    private fileShareSlotModel: Model<FileShareSlotDocument>,
     private readonly fileShareDomainMapper: FileShareDomainMapper,
     private readonly fileSharePersistanceMapper: FileSharePersistanceMapper,
   ) {}
@@ -28,41 +26,16 @@ export default class FileShareRepository implements IFileShareRepository {
   public async save(target: FileShare) {
     const fileShare = await this.fileShareModel.findOneAndUpdate(
       { ownerId: target.ownerId.value },
-      this.fileSharePersistanceMapper.mapToDataModel(target).fileShare,
+      this.fileSharePersistanceMapper.mapToDataModel(target),
       { upsert: true, new: true },
     );
 
-    const persistanceFiles =
-      this.fileSharePersistanceMapper.mapToDataModel(target).files;
-
-    const files: FileShareSlot[] = [];
-
-    for (let i = 0; i < persistanceFiles.length; i++) {
-      const file = persistanceFiles[i];
-
-      const updatedFile = await this.fileShareSlotModel.findOneAndUpdate(
-        { shareID: target.id.value, slotNumber: file.slotNumber },
-        file,
-        { upsert: true, new: true },
-      );
-
-      files.push(updatedFile);
-    }
-
-    //console.log(files.map((file) => (file ? { uniqueId: file.uniqueId, slot: file.slotNumber} : "no file")));
-
-    await this.fileShareSlotModel.deleteMany({
-      shareID: target.id.value,
-      id: { $nin: persistanceFiles.map((file) => file.id) },
-    });
-
-    return this.fileShareDomainMapper.mapToDomainModel(fileShare, files);
+    return this.fileShareDomainMapper.mapToDomainModel(fileShare);
   }
 
   public async findByOwner(id: UserID) {
     const fileShare = await this.fileShareModel.findOne({ ownerId: id.value });
     if (!fileShare) return;
-    const files = await this.fileShareSlotModel.find({ shareID: fileShare.id });
-    return this.fileShareDomainMapper.mapToDomainModel(fileShare, files);
+    return this.fileShareDomainMapper.mapToDomainModel(fileShare);
   }
 }

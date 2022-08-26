@@ -13,22 +13,8 @@ import Uuid from 'src/domain/value-objects/Uuid';
 export default class FileShareDomainMapper {
   constructor(@Inject(ILoggerSymbol) private readonly logger: ILogger) {}
 
-  public mapToDomainModel(
-    fileShare: FileShareModel,
-    files: FileModel[],
-  ): FileShare {
-    const mappedFiles: FileShareSlot[] = files.map(
-      (file) =>
-        new FileShareSlot({
-          id: Uuid.create(file.id),
-          uniqueId: new UniqueID(file.uniqueId),
-          slotNumber: new SlotNumber(file.slotNumber),
-          data: file.data,
-          header: file.header,
-        }),
-    );
-
-    const aggregateAlbum = new FileShare({
+  public mapToDomainModel(fileShare: FileShareModel): FileShare {
+    return new FileShare({
       id: Uuid.create(fileShare.id),
       ownerId: UserID.create(fileShare.ownerId),
       message: fileShare.message,
@@ -36,9 +22,16 @@ export default class FileShareDomainMapper {
       quotaBytes: fileShare.quotaBytes,
       quotaSlots: fileShare.quotaSlots,
       subscriptionHash: fileShare.subscriptionHash,
-      slots: mappedFiles,
+      slots: fileShare.slots.map(
+        (file) =>
+          new FileShareSlot({
+            id: Uuid.create(file.id),
+            uniqueId: new UniqueID(file.uniqueId),
+            slotNumber: new SlotNumber(file.slotNumber),
+            data: file.data,
+            header: file.header,
+          }),
+      ),
     });
-
-    return aggregateAlbum;
   }
 }

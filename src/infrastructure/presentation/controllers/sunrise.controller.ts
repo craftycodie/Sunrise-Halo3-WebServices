@@ -46,26 +46,6 @@ export class SunriseController {
     private readonly commandBus: CommandBus,
   ) {}
 
-  @Get('/screenshots/:userId')
-  async playerScreenshots(@Param('userId') userId: string) {
-    const screenshots: Screenshot[] = await this.queryBus.execute(
-      new GetPlayerScreenshotsQuery(UserID.create(userId)),
-    );
-    return `
-<html>
-    <body>
-        <h1>Player Screenshots</h1>
-        ${screenshots
-          .map(
-            (screenshot) =>
-              `<img height="450" src="/sunrise/screenshot/${screenshot.id.value}.jpg"/>`,
-          )
-          .join('')}
-    </body>
-</html>
-`;
-  }
-
   swap32(val) {
     return (
       ((val & 0xff) << 24) |
@@ -75,15 +55,16 @@ export class SunriseController {
     );
   }
 
-  @Get('/fileshare/:shareId/:slot')
-  @Header('Content-Type', 'image/jpeg')
+  @Get('/player/:xuid/fileshare/:slot')
+  @Header('Content-Type', 'image/jpg')
+  @ApiParam({ name: 'xuid', example: '000901FC3FB8FE71' })
   async getFileshareScreenshot(
     @Res({ passthrough: true }) res: Response,
-    @Param('shareId') shareId: string,
+    @Param('xuid') xuid: string,
     @Param('slot') slotNumber: string,
   ) {
     const fileShare: FileShare = await this.queryBus.execute(
-      new GetFileshareQuery(UserID.create(shareId)),
+      new GetFileshareQuery(UserID.create(xuid)),
     );
 
     if (!fileShare) throw new NotFoundException();
@@ -348,7 +329,9 @@ export class SunriseController {
                     }_010.json`,
                   );
 
-                  gameEntry['mapVariant'] = mapVariant.mvar;
+                  gameEntry['mapVariant'] = {
+                    metadata: mapVariant.mvar.metadata,
+                  };
                   gameEntry['gameVariant'] = Object.values(gameVariant.gvar)[0];
                 })();
               }),
@@ -403,13 +386,14 @@ export class SunriseController {
     const fileshare = await this.queryBus.execute(
       new GetFileshareQuery(UserID.create(userID)),
     );
+
     return {
       ...fileshare,
       slots: fileshare.slots.map((slot) => ({
         ...slot,
         data: undefined,
-      }))
-    }
+      })),
+    };
   }
 
   @Get('/player/:xuid/servicerecord')
@@ -418,5 +402,18 @@ export class SunriseController {
     return (
       await this.queryBus.execute(new GetUserQuery(UserID.create(userID)))
     ).serviceRecord;
+  }
+
+  @Get('/player/:xuid/screenshots')
+  @ApiParam({ name: 'xuid', example: '000901FC3FB8FE71' })
+  async getScreenshots(@Param('xuid') userID) {
+    return (
+      await this.queryBus.execute(
+        new GetPlayerScreenshotsQuery(UserID.create(userID)),
+      )
+    ).map((screenshot) => ({
+      ...screenshot,
+      data: undefined,
+    }));
   }
 }
