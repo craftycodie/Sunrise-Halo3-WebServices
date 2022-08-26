@@ -24,6 +24,15 @@ export default class UserRepository implements IUserRepository {
     return this.userDomainMapper.mapToDomainModel(user);
   }
 
+  public async findByGamertag(gamertag: string) {
+    const user = await this.userModel.findOne({
+      'serviceRecord.playerName': gamertag,
+    });
+    if (!user) return;
+
+    return this.userDomainMapper.mapToDomainModel(user);
+  }
+
   public async save(target: User) {
     const user = await this.userModel.findOneAndUpdate(
       { id: target.id.value },

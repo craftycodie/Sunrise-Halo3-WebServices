@@ -11,12 +11,14 @@ import { GetFileshareQueryHandler } from './queryHandlers/GetFileshareQueryHandl
 import { GetUserQueryHandler } from './queryHandlers/GetUserQueryHandler';
 import { CreateUserCommandHandler } from './commandHandlers/CreateUserCommandHandler';
 import { UpdateServiceRecordCommandHandler } from './commandHandlers/UpdateServiceRecordCommandHandler';
+import { GetPlayerXuidQueryHandler } from './queryHandlers/GetPlayerXuidQueryHandler';
 
 export const QueryHandlers = [
   GetFileshareQueryHandler,
   GetScreenshotQueryHandler,
   GetPlayerScreenshotsQueryHandler,
   GetUserQueryHandler,
+  GetPlayerXuidQueryHandler,
 ];
 export const CommandHandlers = [
   CreateFileShareCommandHandler,

@@ -36,6 +36,7 @@ import MapVariantFile from '../types/MapVariantFile';
 import { statSync } from 'fs';
 import GameVariantFile from '../types/GameVariantFile';
 import { GetUserQuery } from 'src/application/queries/GetUserQuery';
+import { GetPlayerXuidQuery } from 'src/application/queries/GetPlayerXuidQuery';
 
 @ApiTags('Sunrise')
 @Controller('/sunrise')
@@ -380,12 +381,14 @@ export class SunriseController {
     return this.playlistsJson;
   }
 
-  @Get('/player/:xuid/fileshare')
-  @ApiParam({ name: 'xuid', example: '000901FC3FB8FE71' })
-  async getFileshare(@Param('xuid') userID) {
-    const fileshare = await this.queryBus.execute(
-      new GetFileshareQuery(UserID.create(userID)),
-    );
+  @Get('/player/:gamertag/fileshare')
+  @ApiParam({ name: 'gamertag', example: 'craftycodie' })
+  async getFileshare(@Param('gamertag') gamertag) {
+    const xuid = await this.queryBus.execute(new GetPlayerXuidQuery(gamertag));
+
+    if (!xuid) throw new NotFoundException();
+
+    const fileshare = await this.queryBus.execute(new GetFileshareQuery(xuid));
 
     return {
       ...fileshare,
@@ -396,21 +399,25 @@ export class SunriseController {
     };
   }
 
-  @Get('/player/:xuid/servicerecord')
-  @ApiParam({ name: 'xuid', example: '000901FC3FB8FE71' })
-  async getServiceRecord(@Param('xuid') userID) {
-    return (
-      await this.queryBus.execute(new GetUserQuery(UserID.create(userID)))
-    ).serviceRecord;
+  @Get('/player/:gamertag/servicerecord')
+  @ApiParam({ name: 'gamertag', example: 'craftycodie' })
+  async getServiceRecord(@Param('gamertag') gamertag) {
+    const xuid = await this.queryBus.execute(new GetPlayerXuidQuery(gamertag));
+
+    if (!xuid) throw new NotFoundException();
+
+    return (await this.queryBus.execute(new GetUserQuery(xuid))).serviceRecord;
   }
 
-  @Get('/player/:xuid/screenshots')
-  @ApiParam({ name: 'xuid', example: '000901FC3FB8FE71' })
-  async getScreenshots(@Param('xuid') userID) {
+  @Get('/player/:gamertag/screenshots')
+  @ApiParam({ name: 'gamertag', example: 'craftycodie' })
+  async getScreenshots(@Param('gamertag') gamertag) {
+    const xuid = await this.queryBus.execute(new GetPlayerXuidQuery(gamertag));
+
+    if (!xuid) throw new NotFoundException();
+
     return (
-      await this.queryBus.execute(
-        new GetPlayerScreenshotsQuery(UserID.create(userID)),
-      )
+      await this.queryBus.execute(new GetPlayerScreenshotsQuery(xuid))
     ).map((screenshot) => ({
       ...screenshot,
       data: undefined,
