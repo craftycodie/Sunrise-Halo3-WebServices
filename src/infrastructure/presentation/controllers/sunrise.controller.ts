@@ -56,16 +56,18 @@ export class SunriseController {
     );
   }
 
-  @Get('/player/:xuid/fileshare/:slot')
+  @Get('/player/:gamertag/fileshare/:slot')
   @Header('Content-Type', 'image/jpg')
-  @ApiParam({ name: 'xuid', example: '000901FC3FB8FE71' })
+  @ApiParam({ name: 'gamertag', example: '000901FC3FB8FE71' })
   async getFileshareScreenshot(
     @Res({ passthrough: true }) res: Response,
-    @Param('xuid') xuid: string,
+    @Param('gamertag') gamertag: string,
     @Param('slot') slotNumber: string,
   ) {
+    const xuid = await this.queryBus.execute(new GetPlayerXuidQuery(gamertag));
+
     const fileShare: FileShare = await this.queryBus.execute(
-      new GetFileshareQuery(UserID.create(xuid)),
+      new GetFileshareQuery(xuid),
     );
 
     if (!fileShare) throw new NotFoundException();
@@ -363,6 +365,16 @@ export class SunriseController {
           name: 'Social',
           description: '',
         },
+        {
+          identifier: 3,
+          name: 'Basic Training',
+          description: '',
+        },
+        {
+          identifier: 4,
+          name: 'Community Playlists',
+          description: '',
+        }
       ];
 
       categories = [...categories, ...hoppersFile.mhcf.categories];
