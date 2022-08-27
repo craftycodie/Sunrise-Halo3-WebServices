@@ -320,7 +320,7 @@ export class SunriseController {
                     `./public/storage/title/tracked/12070/default_hoppers/${String(
                       configuration.identifier,
                     ).padStart(5, '0')}/map_variants/${
-                      gameEntry.mapVariantFileName
+                      gameEntry.mapVariantFileName.toLowerCase()
                     }_012.json`,
                   );
 
@@ -328,7 +328,7 @@ export class SunriseController {
                     `./public/storage/title/tracked/12070/default_hoppers/${String(
                       configuration.identifier,
                     ).padStart(5, '0')}/${
-                      gameEntry.gameVariantFileName
+                      gameEntry.gameVariantFileName.toLowerCase()
                     }_010.json`,
                   );
 
