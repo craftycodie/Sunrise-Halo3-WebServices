@@ -9,10 +9,10 @@ export type UserDocument = User & Document;
 
 @Schema()
 export class User {
-  @Prop({ required: true, unique: true })
+  @Prop({ required: true })
   id: string;
 
-  @Prop({ required: true, unique: true })
+  @Prop({ required: true })
   xuid: string;
 
   @Prop({ required: true, default: [], type: [BanSchema] })
