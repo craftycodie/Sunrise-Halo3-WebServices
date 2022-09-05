@@ -63,7 +63,6 @@ $ npm run start:prod
 2. Run the `npm run start:docker` command to compose and start.
 
 In the case of port conflicts, review/edit the `docker-compose.yml` file accordingly.
-The docker container is built with seeding for demo purposes. If desired this can be removed from the `Dockerfile`.
 
 ## Documentation
 
