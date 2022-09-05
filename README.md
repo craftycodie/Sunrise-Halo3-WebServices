@@ -1,3 +1,4 @@
+![hero](hero.jpg)
 # Halo 3 Web Services [![Build status](https://ci.appveyor.com/api/projects/status/eip5dxg0ig0bbpu9?svg=true)](https://ci.appveyor.com/project/craftycodie/sunrise-webserver)
 This api contains a rough reimplementation of all of Halo 3's web services including support for 
 - Matchmaking
