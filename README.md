@@ -12,6 +12,7 @@ This api contains a rough reimplementation of all of Halo 3's web services inclu
 - Screenshots
 - Nameplates
 - Crash Reporting
+- Webstats (needs a lot of work, see [#4](https://github.com/craftycodie/Sunrise-Halo3-WebServices/issues/4))
 
 and much more :)
 
