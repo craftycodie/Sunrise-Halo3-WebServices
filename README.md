@@ -56,20 +56,6 @@ $ npm run start:dev
 # production mode
 $ npm run start:prod
 ```
-
-### Running in Docker
-
-1. Run the `npm run build:docker` command to build the docker container.
-2. Run the `npm run start:docker` command to compose and start.
-
-In the case of port conflicts, review/edit the `docker-compose.yml` file accordingly.
-
-## Documentation
-
-Once the app is running, swagger documentation can be found at the /api route.
-eg. if you are running the web service locally, navigate to http://localhost:8080/api
-
-
 ---
 
-Last Updated 13/08/22 by Codie Stella 🐧
+Last Updated 05/09/22 by Codie Stella 🐧
