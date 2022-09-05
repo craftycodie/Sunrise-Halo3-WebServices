@@ -8,7 +8,7 @@ Webserver for Halo 3
 
 ```env
   API_PORT=8080
-  MONGO_URI
+  MONGO_URI=
 ```
 
 3. Build the web service with the `npm run build` command.
