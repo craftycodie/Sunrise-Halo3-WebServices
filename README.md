@@ -23,7 +23,7 @@ This project is built for use with [Sunrise-Plugin](https://github.com/craftycod
 ## Preparing the project
 
 1. Install dependencies with the `npm install` command.
-2. Prepare create a `.env` file in the project root, following this structure:
+2. Create a `.env` file in the project root, following this structure:
 
 ```env
   API_PORT=8080
