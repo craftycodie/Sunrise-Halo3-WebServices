@@ -1,4 +1,4 @@
-# Sunrise Webserver [![Build status](https://ci.appveyor.com/api/projects/status/gqxshmc8jhn725yf?svg=true)](https://ci.appveyor.com/project/craftycodie/sunrise-webserver)
+# Sunrise Webserver [![Build status](https://ci.appveyor.com/api/projects/status/eip5dxg0ig0bbpu9?svg=true)](https://ci.appveyor.com/project/craftycodie/sunrise-webserver)
 Webserver for Halo 3
 
 ## Preparing the project
