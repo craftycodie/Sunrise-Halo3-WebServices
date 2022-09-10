@@ -81,7 +81,8 @@ export class UserStorageController {
     const fupd = new PlayerData();
     fupd.hopperAccess = user.playerData.hopperAccess;
     fupd.bungieUserRole = 0;
-    if (user.playerData.isBnetUser) true; //fupd.bungieUserRole += 1;
+    //if (user.playerData.isBnetUser) fupd.bungieUserRole += 1;
+    fupd.bungieUserRole += 1;
     if (user.playerData.isPro) fupd.bungieUserRole += 2;
     if (user.playerData.isBungie) fupd.bungieUserRole += 4;
     if (user.playerData.hasRecon) fupd.bungieUserRole += 8;
