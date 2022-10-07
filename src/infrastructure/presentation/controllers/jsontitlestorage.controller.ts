@@ -16,7 +16,7 @@ import { ApiParam, ApiTags } from '@nestjs/swagger';
 import { stat } from 'fs/promises';
 import { Response } from 'express';
 
-@ApiTags('Title Storage')
+@ApiTags('Title Storage (JSON)')
 @Controller('/storage/title/:titleType/:titleId')
 export class JSONTitleStorageController {
   constructor(

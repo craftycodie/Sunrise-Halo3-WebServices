@@ -17,7 +17,7 @@ import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { GetFileshareQuery } from 'src/application/queries/GetFileshareQuery';
 import UserID from 'src/domain/value-objects/UserId';
 import Locale from 'src/domain/value-objects/Locale';
-import { ApiQuery, ApiTags } from '@nestjs/swagger';
+import { ApiHeader, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { writeFile } from 'fs/promises';
 import { join } from 'path';
@@ -140,6 +140,14 @@ export class GameApiController {
   }
 
   @Get('/FilesNewUpload.ashx')
+  @ApiQuery({ name: 'title'})
+  @ApiQuery({ name: 'userId'})
+  @ApiQuery({ name: 'shareId'})
+  @ApiQuery({ name: 'slot' })
+  @ApiQuery({ name: 'uniqueId'})
+  @ApiQuery({ name: 'fileType'})
+  @ApiQuery({ name: 'uncompressedSize'})
+  @ApiQuery({ name: 'compressedSize'})
   async startFileUpload(
     @Query('title') titleID,
     @Query('userId') userID,
@@ -155,6 +163,11 @@ export class GameApiController {
   }
 
   @Get('/FilesGetUploadProgress.ashx')
+  @ApiQuery({ name: 'title'})
+  @ApiQuery({ name: 'userId'})
+  @ApiQuery({ name: 'shareId'})
+  @ApiQuery({ name: 'slot'})
+  @ApiQuery({ name: 'serverId'})
   async getUploadProgress(
     @Query('title') titleID,
     @Query('userId') userID,
@@ -202,6 +215,11 @@ export class GameApiController {
   }
 
   @Post('/FilesUpload.ashx')
+  @ApiHeader({name: 'title'})
+  @ApiHeader({name: 'userid'})
+  @ApiHeader({name: 'shareid'})
+  @ApiHeader({name: 'slot'})
+  @ApiHeader({name: 'serverid'})
   @UseInterceptors(FileInterceptor('upload'))
   async uploadFile(
     @UploadedFile() upload: Express.Multer.File,
@@ -233,6 +251,11 @@ export class GameApiController {
   }
 
   @Get('/FilesDownload.ashx')
+  @ApiHeader({name: 'title'})
+  @ApiQuery({name: 'userId'})
+  @ApiQuery({name: 'shareId'})
+  @ApiQuery({name: 'slot'})
+  @ApiQuery({name: 'serverId'})
   async downloadFile(
     @Headers('title') titleID,
     @Query('userId') userid,
@@ -251,6 +274,9 @@ export class GameApiController {
 
   // Screenshots are uploaded when they are taken apparently.
   @Post('/FilesUploadBlind.ashx')
+  @ApiHeader({name: 'title'})
+  @ApiHeader({name: 'userid'})
+  @ApiHeader({name: 'gameid'})
   @UseInterceptors(FileInterceptor('upload'))
   async uploadFileBlind(
     @Headers('title') titleID,
@@ -291,6 +317,14 @@ export class GameApiController {
   }
 
   @Get('/FilesStageForDownload.ashx')
+  @ApiQuery({name: 'titleId'})
+  @ApiQuery({name: 'userId'})
+  @ApiQuery({name: 'shareId'})
+  @ApiQuery({name: 'slot'})
+  @ApiQuery({name: 'serverId'})
+  @ApiQuery({name: 'startPosition'})
+  @ApiQuery({name: 'fromAutoQueue'})
+  @ApiQuery({name: 'view'})
   async stageFileDownload(
     @Query('titleId') titleID,
     @Query('userId') userID,
@@ -307,6 +341,11 @@ InitialUrl: /gameapi/FilesDownload.ashx?userId=${userID}&shareId=${shareID}&slot
   }
 
   @Get('/FilesDelete.ashx')
+  @ApiQuery({name: 'titleId'})
+  @ApiQuery({name: 'userId'})
+  @ApiQuery({name: 'shareId'})
+  @ApiQuery({name: 'slot'})
+  @ApiQuery({name: 'serverId'})
   async deleteFile(
     @Query('titleId') titleID,
     @Query('userId') userID,
@@ -324,6 +363,8 @@ InitialUrl: /gameapi/FilesDownload.ashx?userId=${userID}&shareId=${shareID}&slot
   }
 
   @Post('/MachineUpdateNetworkStats.ashx')
+  @ApiHeader({name: 'title'})
+  @ApiHeader({name: 'machineId'})
   @UseInterceptors(FileInterceptor('upload'))
   async machineUpdateNetworkStats(
     @Headers('title') titleID,
