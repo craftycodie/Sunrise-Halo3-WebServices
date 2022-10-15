@@ -311,7 +311,7 @@ export class GameApiController {
     }
   }
 
-  @Post('/FilesResumeDownload.ashx')
+  @Get('/FilesResumeDownload.ashx')
   async resumeDownloadFile() {
     return;
   }
