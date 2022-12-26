@@ -194,7 +194,7 @@ export class GameApiController {
     @Query('userId') userID,
     @Query('locale') locale,
   ) {
-    return `Status: NeverSubscribed`;
+    return `Status: Subscribed`;
     //     return `Status: Subscribed
     // NextOfferID: 1
     // HQButton: Bungie Pro
@@ -311,7 +311,7 @@ export class GameApiController {
     }
   }
 
-  @Post('/FilesResumeDownload.ashx')
+  @Get('/FilesResumeDownload.ashx')
   async resumeDownloadFile() {
     return;
   }

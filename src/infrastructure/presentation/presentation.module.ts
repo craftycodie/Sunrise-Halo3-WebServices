@@ -4,6 +4,7 @@ import { AppLoggerMiddleware } from './AppLoggerMiddleware';
 import { GameApiController } from './controllers/gameapi.controller';
 import { JSONTitleStorageController } from './controllers/jsontitlestorage.controller';
 import { MachineStorageController } from './controllers/machinestorage.controller';
+import { PimpsController } from './controllers/pimps.controller';
 import { SunriseController } from './controllers/sunrise.controller';
 import { TitleStorageController } from './controllers/titlestorage.controller';
 import { UploadServerController } from './controllers/uploadserver.controller';
@@ -19,6 +20,7 @@ import { UserStorageController } from './controllers/userstorage.controller';
     MachineStorageController,
     UploadServerController,
     SunriseController,
+    PimpsController,
   ],
   providers: [],
 })
