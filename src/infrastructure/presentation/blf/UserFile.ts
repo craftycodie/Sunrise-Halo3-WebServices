@@ -13,10 +13,10 @@ export function getBuffer(
 ) {
   const buffer = Buffer.concat([
     new BlfHeader().toBuffer(),
-    fubh.toBuffer(),
-    filq.toBuffer(),
     fupd.toBuffer(),
     srid.toBuffer(),
+    fubh.toBuffer(),
+    filq.toBuffer(),
   ]);
 
   const eof = new BlfFooter(buffer.length);

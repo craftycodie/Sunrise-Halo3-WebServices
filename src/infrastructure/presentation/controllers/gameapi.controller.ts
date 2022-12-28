@@ -123,7 +123,7 @@ export class GameApiController {
         UserID.create(shareID),
         parseInt(titleID),
         UserID.create(userID),
-        new Locale(locale),
+        locale ? new Locale(locale) : null,
       ),
     );
 
