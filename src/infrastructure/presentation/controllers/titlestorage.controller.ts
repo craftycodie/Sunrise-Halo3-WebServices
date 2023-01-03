@@ -62,7 +62,7 @@ export class TitleStorageController {
   @ApiParam({ name: 'titleId', example: '12070' })
   @ApiParam({ name: 'hoppersPath', example: 'default_hoppers' })
   @Header('Content-Type', 'image/jpeg')
-  async getNightmap(
+  async getDynamicNightmap(
     @Param('titleType') titleType: string,
     @Param('titleId') titleId: string,
     @Param('hoppersPath') hoppersPath: string,
@@ -102,6 +102,23 @@ export class TitleStorageController {
   ) {
     return await this.sendLocalFile(
       `${titleType}/${titleId}/${hoppersPath}/network_configuration_135.bin`,
+      res,
+    );
+  }
+
+  // TODO: Regex paths for version numbers.
+  @Get('/:hoppersPath/network_configuration_125.bin')
+  @ApiParam({ name: 'titleType', example: 'tracked' })
+  @ApiParam({ name: 'titleId', example: '11586' })
+  @ApiParam({ name: 'hoppersPath', example: 'default_hoppers' })
+  async getNetworkConfig125(
+    @Param('titleType') titleType: string,
+    @Param('titleId') titleId: string,
+    @Param('hoppersPath') hoppersPath: string,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    return await this.sendLocalFile(
+      `${titleType}/${titleId}/${hoppersPath}/network_configuration_125.bin`,
       res,
     );
   }
