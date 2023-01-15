@@ -5,19 +5,18 @@ import {
   Headers,
   Inject,
   NotFoundException,
-  ParseIntPipe,
   Post,
   Query,
   Res,
   StreamableFile,
   UploadedFile,
   UseInterceptors,
-  DefaultValuePipe,
 } from '@nestjs/common';
 import ILogger, { ILoggerSymbol } from '../../../ILogger';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { GetFileshareQuery } from 'src/application/queries/GetFileshareQuery';
 import UserID from 'src/domain/value-objects/UserId';
+import Locale from 'src/domain/value-objects/Locale';
 import { ApiHeader, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { writeFile } from 'fs/promises';
@@ -34,21 +33,15 @@ import { UpdateServiceRecordCommand } from 'src/application/commands/UpdateServi
 import { Request, Response } from 'express';
 import { Req } from '@nestjs/common/decorators';
 
-const mapFileshareToResponse = (fileshare: FileShare, title: number) => {
-  if (title == -1) {
+const mapFileshareToResponse = (
+  fileshare: FileShare,
+  isPreRelease: boolean,
+) => {
+  if (isPreRelease) {
     return `QuotaBytes: ${fileshare.quotaBytes}
 QuotaSlots: ${fileshare.quotaSlots}
 SlotCount: ${fileshare.slots.length}
 ${fileshare.slots.map((slot) => mapFileShareSlotToResponse(slot)).join('')}
-`;
-  } else if (title == 3) {
-    return `QuotaBytes: ${fileshare.quotaBytes}
-QuotaSlots: ${fileshare.quotaSlots}
-SlotCount: ${fileshare.slots.length}
-VisibleSlots: ${fileshare.visibleSlots}
-SubscriptionHash: ${fileshare.subscriptionHash}
-Message: ${fileshare.message ? fileshare.message : ''}
-${fileshare.slots.map((slot) => mapODSTFileShareSlotToResponse(slot)).join('')}
 `;
   } else {
     return `QuotaBytes: ${fileshare.quotaBytes}
@@ -96,7 +89,7 @@ const getFileTypeString = (fileType: number) => {
 };
 
 const mapFileShareSlotToResponse = (fileshareSlot: FileShareSlot) => {
-  return `StartSlot: ${fileshareSlot.slotNumber.value}
+    return `StartSlot: ${fileshareSlot.slotNumber.value}
   Guid: fake
   State: Ready
   Name: ${fileshareSlot.header.filename}
@@ -117,33 +110,9 @@ EndSlot
 `;
 };
 
-const mapODSTFileShareSlotToResponse = (fileshareSlot: FileShareSlot) => {
-  return `StartSlot: ${fileshareSlot.slotNumber.value}
-  Guid: fake
-  State: Ready
-  Name: ${fileshareSlot.header.filename}
-  Description: ${fileshareSlot.header.description}
-  Author: ${fileshareSlot.header.author}
-  AuthorXuid: ${fileshareSlot.header.authorXuid}
-  AuthorXuidIsOnline: ${fileshareSlot.header.authorXuidIsOnline ? '1' : '0'}
-  CampaignInsertionPoint: ${fileshareSlot.header.campaignInsertionPoint}
-  SizeBytes: ${fileshareSlot.header.size}
-  FileType: ${getFileTypeString(fileshareSlot.header.filetype)}
-  SecondsPast19700101: ${fileshareSlot.header.date}
-  LengthSeconds: ${fileshareSlot.header.lengthSeconds}
-  CampaignID: ${fileshareSlot.header.campaignId}
-  MapID: ${fileshareSlot.header.mapId}
-  GameEngineType: ${fileshareSlot.header.gameEngineType}
-  CampaignDifficulty: ${fileshareSlot.header.campaignDifficulty}
-  CampaignSurvivalEnabled: ${fileshareSlot.header.campaignSurvivalEnabled ? '1' : '0'}
-  GameID: ${fileshareSlot.header.gameId}
-EndSlot
-`;
-};
-
-@ApiTags('Game API')
-@Controller('/gameapi')
-export class GameApiController {
+@ApiTags('Game API (Reach)')
+@Controller('/gameapi_omaha')
+export class GameApiOmahaController {
   constructor(
     @Inject(ILoggerSymbol) private readonly logger: ILogger,
     private readonly queryBus: QueryBus,
@@ -156,18 +125,18 @@ export class GameApiController {
   @ApiQuery({ name: 'userId' })
   @ApiQuery({ name: 'locale' })
   async getFileshare(
-    @Query('title', new DefaultValuePipe(0), ParseIntPipe) titleID,
+    @Query('title') titleID,
     @Query('shareId') shareID,
     @Query('userId') userID,
-    @Query('locale', new DefaultValuePipe('en')) locale,
+    @Query('locale') locale,
     @Req() req: Request,
   ) {
     let fileshare = await this.queryBus.execute(
       new GetFileshareQuery(
-        UserID.create('000901FC3FB8FE71'),
-        titleID,
-        UserID.create('000901FC3FB8FE71'),
-        locale,
+        UserID.create(shareID),
+        parseInt(titleID),
+        UserID.create(userID),
+        locale ? new Locale(locale) : null,
       ),
     );
 
@@ -180,9 +149,7 @@ export class GameApiController {
         ),
       );
 
-    if (!this.containsUppercase(req.path)) titleID = -1;
-
-    return mapFileshareToResponse(fileshare, titleID);
+    return mapFileshareToResponse(fileshare, !this.containsUppercase(req.path));
   }
 
   containsUppercase(str) {
@@ -190,16 +157,16 @@ export class GameApiController {
   }
 
   @Get('/FilesNewUpload.ashx')
-  @ApiQuery({ name: 'title' })
-  @ApiQuery({ name: 'userId' })
-  @ApiQuery({ name: 'shareId' })
+  @ApiQuery({ name: 'title'})
+  @ApiQuery({ name: 'userId'})
+  @ApiQuery({ name: 'shareId'})
   @ApiQuery({ name: 'slot' })
-  @ApiQuery({ name: 'uniqueId' })
-  @ApiQuery({ name: 'fileType' })
-  @ApiQuery({ name: 'uncompressedSize' })
-  @ApiQuery({ name: 'compressedSize' })
+  @ApiQuery({ name: 'uniqueId'})
+  @ApiQuery({ name: 'fileType'})
+  @ApiQuery({ name: 'uncompressedSize'})
+  @ApiQuery({ name: 'compressedSize'})
   async startFileUpload(
-    @Query('title', new DefaultValuePipe(0), ParseIntPipe) titleID,
+    @Query('title') titleID,
     @Query('userId') userID,
     @Query('shareId') shareID,
     @Query('slot') slot,
@@ -207,9 +174,7 @@ export class GameApiController {
     @Query('fileType') fileType,
     @Query('uncompressedSize') uncompressedSize,
     @Query('compressedSize') compressedSize,
-    @Res({ passthrough: true }) res: Response,
   ) {
-    if (titleID == 3) res.status(500).send('');
     const serverId = 1;
     return serverId;
   }
@@ -262,16 +227,40 @@ export class GameApiController {
     // `;
   }
 
+  @Get('/ArenaGetSeasonStats.ashx')
+  @ApiQuery({ name: 'machineId' })
+  @ApiQuery({ name: 'players' })
+  @ApiQuery({ name: 'version' })
+  async getArenaSeasonStats(
+    @Query('machineId') titleID,
+    @Query('players') players,
+    @Query('version') version,
+  ) {
+    return `ok`;
+  }
+
+  @Post('/UserUpdateRewards.ashx')
+  @ApiQuery({ name: 'getDailyChallenges' })
+  @ApiQuery({ name: 'userId' })
+  @ApiQuery({ name: 'machineId' })
+  async getRewards(
+    @Query('getDailyChallenges') getDailyChallenges,
+    @Query('userId') userId,
+    @Query('machineId') machineId,
+  ) {
+    return `ok`;
+  }
+
   uncuckBungieHeader(header: string) {
     return header.replace('"', '').replace('"', '');
   }
 
   @Post('/FilesUpload.ashx')
-  @ApiHeader({ name: 'title' })
-  @ApiHeader({ name: 'userid' })
-  @ApiHeader({ name: 'shareid' })
-  @ApiHeader({ name: 'slot' })
-  @ApiHeader({ name: 'serverid' })
+  @ApiHeader({name: 'title'})
+  @ApiHeader({name: 'userid'})
+  @ApiHeader({name: 'shareid'})
+  @ApiHeader({name: 'slot'})
+  @ApiHeader({name: 'serverid'})
   @UseInterceptors(FileInterceptor('upload'))
   async uploadFile(
     @UploadedFile() upload: Express.Multer.File,
@@ -326,9 +315,9 @@ export class GameApiController {
 
   // Screenshots are uploaded when they are taken apparently.
   @Post('/FilesUploadBlind.ashx')
-  @ApiHeader({ name: 'title' })
-  @ApiHeader({ name: 'userid' })
-  @ApiHeader({ name: 'gameid' })
+  @ApiHeader({name: 'title'})
+  @ApiHeader({name: 'userid'})
+  @ApiHeader({name: 'gameid'})
   @UseInterceptors(FileInterceptor('upload'))
   async uploadFileBlind(
     @Headers('title') titleID,
@@ -369,14 +358,14 @@ export class GameApiController {
   }
 
   @Get('/FilesStageForDownload.ashx')
-  @ApiQuery({ name: 'titleId' })
-  @ApiQuery({ name: 'userId' })
-  @ApiQuery({ name: 'shareId' })
-  @ApiQuery({ name: 'slot' })
-  @ApiQuery({ name: 'serverId' })
-  @ApiQuery({ name: 'startPosition' })
-  @ApiQuery({ name: 'fromAutoQueue' })
-  @ApiQuery({ name: 'view' })
+  @ApiQuery({name: 'titleId'})
+  @ApiQuery({name: 'userId'})
+  @ApiQuery({name: 'shareId'})
+  @ApiQuery({name: 'slot'})
+  @ApiQuery({name: 'serverId'})
+  @ApiQuery({name: 'startPosition'})
+  @ApiQuery({name: 'fromAutoQueue'})
+  @ApiQuery({name: 'view'})
   async stageFileDownload(
     @Query('titleId') titleID,
     @Query('userId') userID,
@@ -392,11 +381,11 @@ InitialUrl: /gameapi/FilesDownload.ashx?userId=${userID}&shareId=${shareID}&slot
   }
 
   @Get('/FilesDelete.ashx')
-  @ApiQuery({ name: 'titleId' })
-  @ApiQuery({ name: 'userId' })
-  @ApiQuery({ name: 'shareId' })
-  @ApiQuery({ name: 'slot' })
-  @ApiQuery({ name: 'serverId' })
+  @ApiQuery({name: 'titleId'})
+  @ApiQuery({name: 'userId'})
+  @ApiQuery({name: 'shareId'})
+  @ApiQuery({name: 'slot'})
+  @ApiQuery({name: 'serverId'})
   async deleteFile(
     @Query('titleId') titleID,
     @Query('userId') userID,
@@ -414,8 +403,8 @@ InitialUrl: /gameapi/FilesDownload.ashx?userId=${userID}&shareId=${shareID}&slot
   }
 
   @Post('/MachineUpdateNetworkStats.ashx')
-  @ApiHeader({ name: 'title' })
-  @ApiHeader({ name: 'machineId' })
+  @ApiHeader({name: 'title'})
+  @ApiHeader({name: 'machineId'})
   @UseInterceptors(FileInterceptor('upload'))
   async machineUpdateNetworkStats(
     @Headers('title') titleID,

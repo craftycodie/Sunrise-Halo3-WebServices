@@ -11,6 +11,8 @@ import { UserStorageController } from './controllers/userstorage.controller';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
 import { CqrsModule } from '@nestjs/cqrs';
+import { GameApiOmahaController } from './controllers/gameapi_omaha.controller';
+import { ReachPresenceApiController } from './controllers/reach_presence_api.controller.ts';
 
 @Module({
   imports: [
@@ -20,6 +22,8 @@ import { CqrsModule } from '@nestjs/cqrs';
     }),
   ],
   controllers: [
+    GameApiOmahaController,
+    ReachPresenceApiController,
     GameApiController,
     TitleStorageController,
     JSONTitleStorageController,

@@ -25,12 +25,27 @@ export class MachineStorageController {
     private readonly commandBus: CommandBus,
   ) {}
 
+  @Get('/:unk1/:unk2/:xuid/machine.bin')
+  @ApiParam({ name: 'xuid', example: '000000000000EAD3' })
+  async getDeltaMachine(
+    @Param('xuid') xuid: string,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    return await this.getMachineFile(xuid, res);
+  }
+
+  @Get('/:titleId/:unk1/:unk2/:unk3/:xuid/machine.bin')
+  @ApiParam({ name: 'xuid', example: '000000000000EAD3' })
+  async getOmahaMachine(
+    @Param('xuid') xuid: string,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    return await this.getMachineFile(xuid, res);
+  }
+
   @Get('/:unk1/:unk2/:unk3/:xuid/machine.bin')
   @ApiParam({ name: 'xuid', example: '000000000000EAD3' })
   async getMachineFile(
-    @Param('unk1') unk1: string,
-    @Param('unk2') unk2: string,
-    @Param('unk3') unk3: string,
     @Param('xuid') xuid: string,
     @Res({ passthrough: true }) res: Response,
   ) {

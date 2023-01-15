@@ -17,7 +17,8 @@ export class FileShare {
   quotaSlots: number;
   @Prop({ required: true, default: 9 })
   visibleSlots: number;
-  subscriptionHash: string;
+  @Prop({ required: true, default: 0 })
+  subscriptionHash: number;
   @Prop({ required: true, default: [], type: [FileShareSlotSchema] })
   slots: FileShareSlot[];
 }

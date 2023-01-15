@@ -34,10 +34,17 @@ export class UploadServerController {
     @UploadedFile() upload: Express.Multer.File,
     @Res({ passthrough: true }) res: Response,
   ) {
-    if (!upload.mimetype.startsWith('application/x-halo3-'))
+    if (
+      !upload.mimetype.startsWith('application/x-halo3-') &&
+      !upload.mimetype.startsWith('application/x-atlas-') &&
+      !upload.mimetype.startsWith('application/x-bungie-')
+    )
       throw new BadRequestException(`Unrecognized file!`);
 
-    const filetype = upload.mimetype.replace('application/x-halo3-', '');
+    const filetype = upload.mimetype
+      .replace('application/x-halo3-', '')
+      .replace('application/x-atlas-', '')
+      .replace('application/x-bungie-', '');
 
     if (filetype === 'multi') {
       const blf = inflate(upload.buffer.subarray(12));
@@ -56,15 +63,27 @@ export class UploadServerController {
       }
     }
 
-    await writeFile(
-      join(
-        process.cwd(),
-        'uploads',
-        filetype,
-        upload.originalname + '_' + new Date().getTime().toString(),
-      ),
-      inflate(upload.buffer.subarray(12)),
-    );
+    try {
+      await writeFile(
+        join(
+          process.cwd(),
+          'uploads',
+          filetype,
+          new Date().getTime().toString() + '_' + upload.originalname,
+        ),
+        inflate(upload.buffer.subarray(12)),
+      );
+    } catch (e) {
+      await writeFile(
+        join(
+          process.cwd(),
+          'uploads',
+          filetype,
+          new Date().getTime().toString() + '_' + upload.originalname,
+        ),
+        upload.buffer,
+      );
+    }
 
     res.status(200).send('');
   }

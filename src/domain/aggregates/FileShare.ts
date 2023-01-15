@@ -1,6 +1,4 @@
-import { v4 } from 'uuid';
 import FileShareSlot from '../entities/FileShareSlot';
-import GameID from '../value-objects/GameID';
 import SlotNumber from '../value-objects/SlotNumber';
 import UserID from '../value-objects/UserId';
 import Uuid from '../value-objects/Uuid';
@@ -13,7 +11,7 @@ interface FileShareProps {
   quotaBytes: number;
   quotaSlots: number;
   visibleSlots: number;
-  subscriptionHash?: string;
+  subscriptionHash: number;
 }
 
 export default class FileShare implements FileShareProps {
@@ -29,7 +27,7 @@ export default class FileShare implements FileShareProps {
   quotaBytes: number;
   quotaSlots: number;
   visibleSlots: number;
-  subscriptionHash?: string;
+  subscriptionHash: number;
 
   uploadFile(slot: FileShareSlot): void {
     this.deleteFile(slot.slotNumber);

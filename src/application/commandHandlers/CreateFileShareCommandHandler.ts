@@ -23,6 +23,7 @@ export class CreateFileShareCommandHandler
         quotaBytes: 262144000,
         quotaSlots: 25,
         visibleSlots: 25,
+        subscriptionHash: 0,
       }),
     );
   }

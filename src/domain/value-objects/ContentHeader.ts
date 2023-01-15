@@ -16,5 +16,8 @@ export default interface ContentHeader {
   gameEngineType: number;
   campaignDifficulty: number;
   hopperId: number;
-  gameId: string;
+  gameId: number;
+  //ODST
+  campaignInsertionPoint: number;
+  campaignSurvivalEnabled: boolean;
 }

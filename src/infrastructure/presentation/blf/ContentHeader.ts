@@ -37,6 +37,8 @@ export function readContentHeader(arrayBuffer: ArrayBuffer): ContentHeader {
     gameEngineType: readNumber(arrayBuffer.slice(0xe8, 0xec)),
     campaignDifficulty: readNumber(arrayBuffer.slice(0xec, 0xf0)),
     hopperId: readNumber(arrayBuffer.slice(0xf0, 0xf2)),
-    gameId: readLong(arrayBuffer.slice(0xf4, 0xfc)),
+    gameId: readNumber(arrayBuffer.slice(0xf4, 0xf8)),
+    campaignInsertionPoint: 0,
+    campaignSurvivalEnabled: false,
   };
 }

@@ -33,6 +33,33 @@ export class UserStorageController {
     private readonly commandBus: CommandBus,
   ) {}
 
+  @Get('/:unk1/:unk2/:xuid/user.bin')
+  @ApiParam({ name: 'xuid', example: '000000000000EAD3' })
+  async getBetaUser(
+    @Param('xuid') xuid: string,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    return await this.getUser('000901FC3FB8FE71', res);
+  }
+
+  @Get('/:titleId/:unk1/:unk2/:unk3/:xuid/user.bin')
+  @ApiParam({ name: 'xuid', example: '000000000000EAD3' })
+  async getOmahaUser(
+    @Param('xuid') xuid: string,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    return await this.getUser(xuid, res);
+  }
+
+  @Get('/:titleId/:unk1/:unk2/:unk3/:xuid/recent_players.bin')
+  @ApiParam({ name: 'xuid', example: '000000000000EAD3' })
+  async getOmahaRecentPlayers(
+    @Param('xuid') xuid: string,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    return await this.getRecentPlayers(xuid, res);
+  }
+
   @Get('/:unk1/:unk2/:unk3/:xuid/user.bin')
   @ApiParam({ name: 'xuid', example: '000000000000EAD3' })
   async getUser(
@@ -118,9 +145,6 @@ export class UserStorageController {
   @Get('/:unk1/:unk2/:unk3/:xuid/recent_players.bin')
   @ApiParam({ name: 'xuid', example: '000000000000EAD3' })
   async getRecentPlayers(
-    @Param('unk1') unk1: string,
-    @Param('unk2') unk2: string,
-    @Param('unk3') unk3: string,
     @Param('xuid') xuid: string,
     @Res({ passthrough: true }) res: Response,
   ) {
