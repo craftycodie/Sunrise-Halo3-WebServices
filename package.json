@@ -31,6 +31,7 @@
     "@nestjs/mongoose": "^9.2.0",
     "@nestjs/platform-express": "^9.0.0",
     "@nestjs/sequelize": "^9.0.0",
+    "@nestjs/serve-static": "^3.0.0",
     "@nestjs/swagger": "^6.1.2",
     "@sequelize/core": "^7.0.0-alpha.10",
     "@types/uuid": "^8.3.4",

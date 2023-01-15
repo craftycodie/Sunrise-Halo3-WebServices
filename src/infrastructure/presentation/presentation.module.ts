@@ -1,5 +1,4 @@
 import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
-import { CqrsModule } from '@nestjs/cqrs';
 import { AppLoggerMiddleware } from './AppLoggerMiddleware';
 import { GameApiController } from './controllers/gameapi.controller';
 import { JSONTitleStorageController } from './controllers/jsontitlestorage.controller';
@@ -9,9 +8,17 @@ import { SunriseController } from './controllers/sunrise.controller';
 import { TitleStorageController } from './controllers/titlestorage.controller';
 import { UploadServerController } from './controllers/uploadserver.controller';
 import { UserStorageController } from './controllers/userstorage.controller';
+import { ServeStaticModule } from '@nestjs/serve-static';
+import { join } from 'path';
+import { CqrsModule } from '@nestjs/cqrs';
 
 @Module({
-  imports: [CqrsModule],
+  imports: [
+    CqrsModule,
+    ServeStaticModule.forRoot({
+      rootPath: join(__dirname, '..', '..', '..', '..', 'public'),
+    }),
+  ],
   controllers: [
     GameApiController,
     TitleStorageController,
