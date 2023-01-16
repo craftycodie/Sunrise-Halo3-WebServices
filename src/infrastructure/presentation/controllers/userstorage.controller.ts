@@ -156,6 +156,15 @@ export class UserStorageController {
     return await this.sendLocalFile(`recent_players.bin`, res);
   }
 
+  @Get('/:unk1/:unk2/:xuid/recent_players_hopper_08.bin')
+  @ApiParam({ name: 'xuid', example: '000000000000EAD3' })
+  async getDeltaRecentPlayers(
+    @Param('xuid') xuid: string,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    return await this.sendLocalFile(`recent_players.bin`, res);
+  }
+
   private async sendLocalFile(path: string, res: Response) {
     path = join(process.cwd(), `public/storage/user/`, path);
 
