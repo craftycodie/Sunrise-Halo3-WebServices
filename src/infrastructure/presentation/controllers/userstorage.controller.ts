@@ -39,7 +39,7 @@ export class UserStorageController {
     @Param('xuid') xuid: string,
     @Res({ passthrough: true }) res: Response,
   ) {
-    return await this.getUser('000901FC3FB8FE71', res);
+    return await this.getUser(xuid, res);
   }
 
   @Get('/:titleId/:unk1/:unk2/:unk3/:xuid/user.bin')

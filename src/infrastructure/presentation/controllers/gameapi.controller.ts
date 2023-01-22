@@ -164,9 +164,9 @@ export class GameApiController {
   ) {
     let fileshare = await this.queryBus.execute(
       new GetFileshareQuery(
-        UserID.create('000901FC3FB8FE71'),
+        UserID.create(shareID),
         titleID,
-        UserID.create('000901FC3FB8FE71'),
+        UserID.create(userID),
         locale,
       ),
     );
