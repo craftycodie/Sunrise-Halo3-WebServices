@@ -11,6 +11,7 @@ import {
   StreamableFile,
   UploadedFile,
   UseInterceptors,
+  HttpCode,
 } from '@nestjs/common';
 import ILogger, { ILoggerSymbol } from '../../../ILogger';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
@@ -19,7 +20,7 @@ import UserID from 'src/domain/value-objects/UserId';
 import Locale from 'src/domain/value-objects/Locale';
 import { ApiHeader, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { writeFile } from 'fs/promises';
+import { stat, writeFile } from 'fs/promises';
 import { join } from 'path';
 import { readContentHeader } from '../blf/ContentHeader';
 import FileShare from 'src/domain/aggregates/FileShare';
@@ -30,8 +31,9 @@ import FileShareSlot from 'src/domain/entities/FileShareSlot';
 import { DeleteFileCommand } from 'src/application/commands/DeleteFileCommand';
 import { UploadScreenshotCommand } from 'src/application/commands/UploadScreenshotCommand';
 import { UpdateServiceRecordCommand } from 'src/application/commands/UpdateServiceRecordCommand';
-import { Request, Response } from 'express';
+import { Request, response, Response } from 'express';
 import { Req } from '@nestjs/common/decorators';
+import { createReadStream } from 'fs';
 
 const mapFileshareToResponse = (
   fileshare: FileShare,
@@ -133,9 +135,9 @@ export class GameApiOmahaController {
   ) {
     let fileshare = await this.queryBus.execute(
       new GetFileshareQuery(
-        UserID.create(shareID),
+        new UserID(shareID),
         parseInt(titleID),
-        UserID.create(userID),
+        new UserID(userID),
         locale ? new Locale(locale) : null,
       ),
     );
@@ -144,8 +146,8 @@ export class GameApiOmahaController {
       fileshare = await this.commandBus.execute(
         new CreateFileShareCommand(
           parseInt(titleID),
-          UserID.create(userID),
-          UserID.create(shareID),
+          new UserID(userID),
+          new UserID(shareID),
         ),
       );
 
@@ -194,9 +196,9 @@ export class GameApiOmahaController {
   ) {
     const fileShare: FileShare = await this.queryBus.execute(
       new GetFileshareQuery(
-        UserID.create(shareID),
+        new UserID(shareID),
         titleID,
-        UserID.create(userID),
+        new UserID(userID),
       ),
     );
     return 0;
@@ -235,10 +237,24 @@ export class GameApiOmahaController {
     @Query('machineId') titleID,
     @Query('players') players,
     @Query('version') version,
+    @Res() res,
   ) {
-    return `ok`;
+    return await this.sendLocalFile(`arenastats.bin`, res);
   }
 
+  private async sendLocalFile(path: string, res: Response) {
+    path = join(process.cwd(), `public/storage/arena/`, path);
+
+    const stats = await stat(path);
+
+    if (!stats.isFile()) throw new NotFoundException();
+
+    res.set('Content-Length', stats.size.toString());
+    res.set('Cache-Control', 'no-cache');
+    return new StreamableFile(createReadStream(path));
+  }
+
+  @HttpCode(200)
   @Post('/UserUpdateRewards.ashx')
   @ApiQuery({ name: 'getDailyChallenges' })
   @ApiQuery({ name: 'userId' })
@@ -247,6 +263,18 @@ export class GameApiOmahaController {
     @Query('getDailyChallenges') getDailyChallenges,
     @Query('userId') userId,
     @Query('machineId') machineId,
+  ) {
+    return `ok`;
+  }
+
+  @Get('/UserGetServiceRecord.ashx')
+  @ApiQuery({ name: 'machineId' })
+  @ApiQuery({ name: 'shareId' })
+  @ApiQuery({ name: 'userId' })
+  async getServiceRecord(
+    @Query('machineId') machineId,
+    @Query('shareId') shareId,
+    @Query('userId') userId,
   ) {
     return `ok`;
   }
@@ -280,8 +308,8 @@ export class GameApiOmahaController {
 
     await this.commandBus.execute(
       new UploadFileCommand(
-        UserID.create(this.uncuckBungieHeader(userid)),
-        UserID.create(this.uncuckBungieHeader(shareID)),
+        new UserID(this.uncuckBungieHeader(userid)),
+        new UserID(this.uncuckBungieHeader(shareID)),
         new SlotNumber(parseInt(this.uncuckBungieHeader(slot))),
         contentHeader,
         upload.buffer,
@@ -305,7 +333,7 @@ export class GameApiOmahaController {
     @Query('serverid') serverId,
   ) {
     const fileshare: FileShare = await this.queryBus.execute(
-      new GetFileshareQuery(UserID.create(shareID)),
+      new GetFileshareQuery(new UserID(shareID)),
     );
 
     if (!fileshare) throw new NotFoundException('File share not found.');
@@ -336,7 +364,7 @@ export class GameApiOmahaController {
 
       await this.commandBus.execute(
         new UploadScreenshotCommand(
-          UserID.create(this.uncuckBungieHeader(userID)),
+          new UserID(this.uncuckBungieHeader(userID)),
           contentHeader,
           upload.buffer,
         ),
@@ -395,8 +423,8 @@ InitialUrl: /gameapi/FilesDownload.ashx?userId=${userID}&shareId=${shareID}&slot
   ) {
     return await this.commandBus.execute(
       new DeleteFileCommand(
-        UserID.create(userID),
-        UserID.create(shareID),
+        new UserID(userID),
+        new UserID(shareID),
         new SlotNumber(slot),
       ),
     );
@@ -433,7 +461,7 @@ InitialUrl: /gameapi/FilesDownload.ashx?userId=${userID}&shareId=${shareID}&slot
     @Query('highestSkill') highestSkill,
   ) {
     this.commandBus.execute(
-      new UpdateServiceRecordCommand(UserID.create(userID), {
+      new UpdateServiceRecordCommand(new UserID(userID), {
         highestSkill: parseInt(highestSkill),
       }),
     );

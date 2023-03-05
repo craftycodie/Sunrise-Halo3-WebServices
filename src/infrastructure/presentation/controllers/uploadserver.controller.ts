@@ -6,6 +6,7 @@ import {
   Res,
   UploadedFile,
   UseInterceptors,
+  HttpCode,
 } from '@nestjs/common';
 import ILogger, { ILoggerSymbol } from '../../../ILogger';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
@@ -28,18 +29,20 @@ export class UploadServerController {
     private readonly commandBus: CommandBus,
   ) {}
 
+  @HttpCode(200)
   @Post('/stats.ashx')
   @UseInterceptors(FileInterceptor('upload'))
   async uploadStats(
     @UploadedFile() upload: Express.Multer.File,
     @Res({ passthrough: true }) res: Response,
   ) {
+    return;
     if (
       !upload.mimetype.startsWith('application/x-halo3-') &&
       !upload.mimetype.startsWith('application/x-atlas-') &&
       !upload.mimetype.startsWith('application/x-bungie-')
-    )
-      throw new BadRequestException(`Unrecognized file!`);
+    ) 
+      throw new BadRequestException(`Unrecognized file! ` + upload.mimetype);
 
     const filetype = upload.mimetype
       .replace('application/x-halo3-', '')
@@ -56,7 +59,7 @@ export class UploadServerController {
         // guests
         if (player.playerName.endsWith(')')) continue;
         this.commandBus.execute(
-          await new UpdateServiceRecordCommand(UserID.create(player.xuid), {
+          await new UpdateServiceRecordCommand(new UserID(player.xuid), {
             ...player,
           }),
         );

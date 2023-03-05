@@ -5,13 +5,13 @@ export default class UserID extends TinyTypeOf<string>() {
     return true;
   }
 
-  public static create(value: string): UserID {
+  constructor(value: string) {
     const isValidValue = UserID.isValidValue(value);
 
     if (!isValidValue) {
       throw new Error(`Invalid user ID string ${value}.`);
     }
 
-    return new UserID(value.toUpperCase());
+    super(value.toUpperCase());
   }
 }

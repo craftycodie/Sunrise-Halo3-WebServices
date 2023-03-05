@@ -12,7 +12,7 @@ export default class ScreenshotDomainMapper {
   public mapToDomainModel(screenshot: ScreenshotModel): Screenshot {
     const aggregateScreenshot = new Screenshot({
       id: Uuid.create(screenshot.id),
-      userId: UserID.create(screenshot.userId),
+      userId: new UserID(screenshot.userId),
       header: screenshot.header,
       data: screenshot.data,
     });

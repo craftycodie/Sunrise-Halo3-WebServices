@@ -22,7 +22,7 @@ export default class UserDomainMapper {
   public mapToDomainModel(user: UserModel): User {
     const aggregateUser = new User({
       id: Uuid.create(user.id),
-      xuid: UserID.create(user.xuid),
+      xuid: new UserID(user.xuid),
       serviceRecord: this.mapServiceRecord(user.serviceRecord),
       playerData: this.mapPlayerData(user.playerData),
       bans: this.mapBans(user.bans),
@@ -36,7 +36,7 @@ export default class UserDomainMapper {
     return transfers.map((transferModel) => {
       return new Transfer({
         id: new Uuid(transferModel.id),
-        shareId: UserID.create(transferModel.shareId),
+        shareId: new UserID(transferModel.shareId),
         slot: new SlotNumber(transferModel.slot),
         fileName: transferModel.fileName,
         fileType: transferModel.fileType,

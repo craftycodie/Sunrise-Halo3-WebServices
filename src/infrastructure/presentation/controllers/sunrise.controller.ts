@@ -162,7 +162,7 @@ export class SunriseController {
 
   //     slot.data = newBlf;
 
-  //     await this.commandBus.execute(new UploadFileCommand(UserID.create(shareId), new ShareID(shareId), slot.slotNumber, slot.header, newBlf));
+  //     await this.commandBus.execute(new UploadFileCommand(new UserID(shareId), new ShareID(shareId), slot.slotNumber, slot.header, newBlf));
 
   //     res.set('Content-Length', newBlf.byteLength.toString());
   //     res.set('Cache-Control', 'no-cache');
@@ -210,7 +210,7 @@ export class SunriseController {
 
   //     slot.data = newBlf;
 
-  //     await this.commandBus.execute(new UploadFileCommand(UserID.create(shareId), new ShareID(shareId), slot.slotNumber, slot.header, newBlf));
+  //     await this.commandBus.execute(new UploadFileCommand(new UserID(shareId), new ShareID(shareId), slot.slotNumber, slot.header, newBlf));
 
   //     res.set('Content-Length', newBlf.byteLength.toString());
   //     res.set('Cache-Control', 'no-cache');

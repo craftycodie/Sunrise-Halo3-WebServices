@@ -16,7 +16,7 @@ export default class FileShareDomainMapper {
   public mapToDomainModel(fileShare: FileShareModel): FileShare {
     return new FileShare({
       id: Uuid.create(fileShare.id),
-      ownerId: UserID.create(fileShare.ownerId),
+      ownerId: new UserID(fileShare.ownerId),
       message: fileShare.message,
       visibleSlots: fileShare.visibleSlots,
       quotaBytes: fileShare.quotaBytes,
