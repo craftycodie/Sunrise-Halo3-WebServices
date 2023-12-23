@@ -7,6 +7,7 @@ import {
   UploadedFile,
   UseInterceptors,
   HttpCode,
+  Get,
 } from '@nestjs/common';
 import ILogger, { ILoggerSymbol } from '../../../ILogger';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
@@ -90,7 +91,6 @@ export class UploadServerController {
 
     res.status(200).send('');
   }
-
   @Post('/upload.ashx')
   @UseInterceptors(FileInterceptor('upload'))
   async uploadDump(
@@ -99,6 +99,36 @@ export class UploadServerController {
   ) {
     await writeFile(
       join(process.cwd(), 'uploads/crashes', upload.originalname),
+      upload.buffer,
+    );
+
+    res.status(200).send('');
+  }
+
+  @Get('/sharedfiles/newupload.ashx')
+  async newSharedFileUpload() {
+    const serverId = 1;
+    return serverId;
+  }
+
+  @Get('/sharedfiles/getuploadprogress.ashx')
+  async getUploadProgress() {
+    return 0;
+  }
+
+  @Post('/sharedfiles/upload.ashx')
+  @UseInterceptors(FileInterceptor('upload'))
+  async uploadFile(
+    @UploadedFile() upload: Express.Multer.File,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    await writeFile(
+      join(
+        process.cwd(),
+        'uploads',
+        'pimps_films',
+        new Date().getTime().toString() + '_' + upload.originalname,
+      ),
       upload.buffer,
     );
 
