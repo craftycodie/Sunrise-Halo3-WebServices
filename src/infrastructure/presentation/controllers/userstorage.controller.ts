@@ -23,6 +23,7 @@ import { GetUserQuery } from 'src/application/queries/GetUserQuery';
 import UserID from 'src/domain/value-objects/UserId';
 import User from 'src/domain/aggregates/User';
 import { CreateUserCommand } from 'src/application/commands/CreateUserCommand';
+import OmahaPlayerData from '../blf/OmahaPlayerData';
 
 @ApiTags('User Storage')
 @Controller('/storage/user')
@@ -48,7 +49,7 @@ export class UserStorageController {
     @Param('xuid') xuid: string,
     @Res({ passthrough: true }) res: Response,
   ) {
-    return await this.getUser(xuid, res);
+    return await this.getUser(xuid, res, true);
   }
 
   @Get('/:titleId/:unk1/:unk2/:unk3/:xuid/recent_players.bin')
@@ -65,6 +66,7 @@ export class UserStorageController {
   async getUser(
     @Param('xuid') xuid: string,
     @Res({ passthrough: true }) res: Response,
+    reach = false,
   ) {
     let user: User = await this.queryBus.execute(
       new GetUserQuery(new UserID(xuid)),
@@ -105,7 +107,9 @@ export class UserStorageController {
     srid.grade = user.serviceRecord.grade;
     srid.unknownInsignia2 = user.serviceRecord.unknownInsignia2;
 
-    const fupd = new PlayerData();
+    let fupd: PlayerData | OmahaPlayerData;
+
+    fupd = new PlayerData();
     fupd.hopperAccess = user.playerData.hopperAccess;
     fupd.bungieUserRole = 0;
     //if (user.playerData.isBnetUser) fupd.bungieUserRole += 1;
@@ -113,8 +117,17 @@ export class UserStorageController {
     if (user.playerData.isPro) fupd.bungieUserRole += 2;
     if (user.playerData.isBungie) fupd.bungieUserRole += 4;
     if (user.playerData.hasRecon) fupd.bungieUserRole += 8;
-    fupd.highestSkill = user.serviceRecord.highestSkill;
+    (fupd as PlayerData).highestSkill = user.serviceRecord.highestSkill;
     fupd.hopperDirectory = user.playerData.hopperDirectory;
+    //fupd.hopperDirectory = 'xenia_hoppers';
+
+    if (reach) {
+      fupd = new OmahaPlayerData();
+      fupd.hopperAccess = user.playerData.hopperAccess;
+      fupd.bungieUserRole = 0xffff;
+      fupd.hopperDirectory = user.playerData.hopperDirectory;
+    }
+    //fupd.hopperDirectory = 'xenia_hoppers';
 
     const fubh = new UserBans();
     fubh.bans = user.bans.map((ban) => ({
