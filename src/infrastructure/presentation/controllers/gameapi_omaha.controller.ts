@@ -237,13 +237,13 @@ export class GameApiOmahaController {
     @Query('machineId') titleID,
     @Query('players') players,
     @Query('version') version,
-    @Res() res,
+    @Res({ passthrough: true }) res,
   ) {
-    return await this.sendLocalFile(`arenastats.bin`, res);
+    return await this.sendLocalFile(`arena/arenastats.bin`, res);
   }
 
   private async sendLocalFile(path: string, res: Response) {
-    path = join(process.cwd(), `public/storage/arena/`, path);
+    path = join(process.cwd(), `public/storage`, path);
 
     const stats = await stat(path);
 
@@ -263,8 +263,9 @@ export class GameApiOmahaController {
     @Query('getDailyChallenges') getDailyChallenges,
     @Query('userId') userId,
     @Query('machineId') machineId,
+    @Res({ passthrough: true }) res,
   ) {
-    return `ok`;
+    return await this.sendLocalFile(`rewards/rewards.bin`, res);
   }
 
   @Get('/UserGetServiceRecord.ashx')

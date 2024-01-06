@@ -1,4 +1,4 @@
-import { Controller, Post, HttpCode, Res } from '@nestjs/common';
+import { Controller, Post, HttpCode, Res, Param } from '@nestjs/common';
 import { NotFoundException } from '@nestjs/common/exceptions';
 import { StreamableFile } from '@nestjs/common/file-stream';
 import { ApiTags } from '@nestjs/swagger';
@@ -12,7 +12,7 @@ import { join } from 'path';
 export class ReachPresenceApiController {
   @HttpCode(200)
   @Post('/heartbeat.ashx')
-  async postPresence(@Res() res) {
+  async postPresence(@Res({ passthrough: true }) res) {
     return await this.sendLocalFile(`heartbeat.bin`, res);
   }
 

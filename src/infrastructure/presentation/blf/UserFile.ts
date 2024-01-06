@@ -1,13 +1,14 @@
 import BlfFooter from './BlfFooter';
 import BlfHeader from './BlfHeader';
 import FileQueue from './FileQueue';
+import OmahaPlayerData from './OmahaPlayerData';
 import PlayerData from './PlayerData';
 import ServiceRecord from './ServiceRecord';
 import UserBans from './UserBans';
 
 export function getBuffer(
   srid: ServiceRecord,
-  fupd: PlayerData,
+  fupd: PlayerData | OmahaPlayerData,
   fubh: UserBans,
   filq: FileQueue,
 ) {

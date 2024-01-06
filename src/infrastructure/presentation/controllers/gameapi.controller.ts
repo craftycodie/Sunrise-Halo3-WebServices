@@ -35,13 +35,13 @@ import { Request, Response } from 'express';
 import { Req } from '@nestjs/common/decorators';
 
 const mapFileshareToResponse = (fileshare: FileShare, title: number) => {
-  if (title == -1) {
+  if (title == -1) { // Delta
     return `QuotaBytes: ${fileshare.quotaBytes}
-QuotaSlots: ${fileshare.quotaSlots}
-SlotCount: ${fileshare.slots.length}
+QuotaSlots: ${Math.min(fileshare.quotaSlots, 9)}
+SlotCount: ${Math.min(fileshare.slots.length, 9)}
 ${fileshare.slots.map((slot) => mapFileShareSlotToResponse(slot)).join('')}
 `;
-  } else if (title == 3) {
+  } else if (title == 3) { // ODST
     return `QuotaBytes: ${fileshare.quotaBytes}
 QuotaSlots: ${fileshare.quotaSlots}
 SlotCount: ${fileshare.slots.length}
@@ -50,7 +50,7 @@ SubscriptionHash: ${fileshare.subscriptionHash}
 Message: ${fileshare.message ? fileshare.message : ''}
 ${fileshare.slots.map((slot) => mapODSTFileShareSlotToResponse(slot)).join('')}
 `;
-  } else {
+  } else { // Normal Halo 3
     return `QuotaBytes: ${fileshare.quotaBytes}
 QuotaSlots: ${fileshare.quotaSlots}
 SlotCount: ${fileshare.slots.length}
@@ -180,6 +180,7 @@ export class GameApiController {
         ),
       );
 
+    // pre-release builds use a lowercase URL, we give them a title ID of -1.
     if (!this.containsUppercase(req.path)) titleID = -1;
 
     return mapFileshareToResponse(fileshare, titleID);
