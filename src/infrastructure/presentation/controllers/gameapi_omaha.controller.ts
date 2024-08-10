@@ -34,6 +34,10 @@ import { UpdateServiceRecordCommand } from 'src/application/commands/UpdateServi
 import { Request, response, Response } from 'express';
 import { Req } from '@nestjs/common/decorators';
 import { createReadStream } from 'fs';
+import { getBuffer } from '../blf/RewardsFile';
+import RewardsPersistance from '../blf/RewardsPersistance';
+import DailyChallenges from '../blf/DailyChallenges';
+import ReachServiceRecord from '../blf/ReachServiceRecord';
 
 const mapFileshareToResponse = (
   fileshare: FileShare,
@@ -259,13 +263,28 @@ export class GameApiOmahaController {
   @ApiQuery({ name: 'getDailyChallenges' })
   @ApiQuery({ name: 'userId' })
   @ApiQuery({ name: 'machineId' })
+  @UseInterceptors(FileInterceptor('upload'))
   async getRewards(
+    @UploadedFile() upload: Express.Multer.File,
     @Query('getDailyChallenges') getDailyChallenges,
     @Query('userId') userId,
     @Query('machineId') machineId,
     @Res({ passthrough: true }) res,
   ) {
-    return await this.sendLocalFile(`rewards/rewards.bin`, res);
+    // await writeFile(
+    //   join(
+    //     process.cwd(),
+    //     'uploads',
+    //     'rewards',
+    //     new Date().getTime().toString() + '_' + upload.originalname,
+    //   ),
+    //   upload.buffer.subarray(12),
+    // );
+
+    const rpdl = new RewardsPersistance();
+    const dcha = new DailyChallenges();
+
+    return new StreamableFile(getBuffer(rpdl, dcha));
   }
 
   @Get('/UserGetServiceRecord.ashx')
@@ -273,11 +292,13 @@ export class GameApiOmahaController {
   @ApiQuery({ name: 'shareId' })
   @ApiQuery({ name: 'userId' })
   async getServiceRecord(
+    @Res({ passthrough: true }) res: Response,
     @Query('machineId') machineId,
     @Query('shareId') shareId,
     @Query('userId') userId,
   ) {
-    return `ok`;
+    const srid = new ReachServiceRecord();
+    return new StreamableFile(srid.toBuffer());
   }
 
   uncuckBungieHeader(header: string) {
