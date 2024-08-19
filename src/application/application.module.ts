@@ -12,6 +12,8 @@ import { GetUserQueryHandler } from './queryHandlers/GetUserQueryHandler';
 import { CreateUserCommandHandler } from './commandHandlers/CreateUserCommandHandler';
 import { UpdateServiceRecordCommandHandler } from './commandHandlers/UpdateServiceRecordCommandHandler';
 import { GetPlayerXuidQueryHandler } from './queryHandlers/GetPlayerXuidQueryHandler';
+import { GetScreenshotsQueryHandler } from './queryHandlers/GetScreenshotsQueryHandler';
+import { GetUsersQueryHandler } from './queryHandlers/GetUsersQueryHandler';
 
 export const QueryHandlers = [
   GetFileshareQueryHandler,
@@ -19,6 +21,8 @@ export const QueryHandlers = [
   GetPlayerScreenshotsQueryHandler,
   GetUserQueryHandler,
   GetPlayerXuidQueryHandler,
+  GetScreenshotsQueryHandler,
+  GetUsersQueryHandler,
 ];
 export const CommandHandlers = [
   CreateFileShareCommandHandler,

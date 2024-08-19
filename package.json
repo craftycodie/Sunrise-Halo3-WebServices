@@ -25,6 +25,7 @@
     "seed": "node ./dist/src/infrastructure/persistance/scripts/seed.js"
   },
   "dependencies": {
+    "@faker-js/faker": "^8.4.1",
     "@nestjs/common": "^9.0.0",
     "@nestjs/core": "^9.0.0",
     "@nestjs/cqrs": "^9.0.1",

@@ -8,6 +8,7 @@ import {
   Param,
   ParseUUIDPipe,
   Post,
+  Query,
   Res,
   StreamableFile,
   UploadedFile,
@@ -15,7 +16,7 @@ import {
 } from '@nestjs/common';
 import ILogger, { ILoggerSymbol } from '../../../ILogger';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
-import { ApiParam, ApiTags } from '@nestjs/swagger';
+import { ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { readdir, readFile, stat } from 'fs/promises';
 import { join } from 'path';
 import { Response } from 'express';
@@ -37,6 +38,8 @@ import { statSync } from 'fs';
 import GameVariantFile from '../types/GameVariantFile';
 import { GetUserQuery } from 'src/application/queries/GetUserQuery';
 import { GetPlayerXuidQuery } from 'src/application/queries/GetPlayerXuidQuery';
+import { GetScreenshotsQuery } from 'src/application/queries/GetScreenshotsQuery';
+import { GetUsersQuery } from 'src/application/queries/GetUsersQuery';
 
 @ApiTags('Sunrise')
 @Controller('/sunrise')
@@ -56,12 +59,12 @@ export class SunriseController {
     );
   }
 
-  @Get('/player/:gamertag/fileshare/:slot')
+  @Get('/player/:xuid/fileshare/:slot')
   @Header('Content-Type', 'image/jpg')
-  @ApiParam({ name: 'gamertag', example: '000901FC3FB8FE71' })
+  @ApiParam({ name: 'xuid', example: '000901FC3FB8FE71' })
   async getFileshareScreenshot(
     @Res({ passthrough: true }) res: Response,
-    @Param('gamertag') gamertag: string,
+    @Param('xuid') gamertag: string,
     @Param('slot') slotNumber: string,
   ) {
     const xuid = await this.queryBus.execute(new GetPlayerXuidQuery(gamertag));
@@ -411,28 +414,47 @@ export class SunriseController {
     };
   }
 
-  @Get('/player/:gamertag/servicerecord')
-  @ApiParam({ name: 'gamertag', example: 'craftycodie' })
-  async getServiceRecord(@Param('gamertag') gamertag) {
-    const xuid = await this.queryBus.execute(new GetPlayerXuidQuery(gamertag));
-
-    if (!xuid) throw new NotFoundException();
-
-    return (await this.queryBus.execute(new GetUserQuery(xuid))).serviceRecord;
+  @Get('/player/:xuid/servicerecord')
+  @ApiParam({ name: 'xuid', example: 'craftycodie' })
+  async getServiceRecord(@Param('xuid') xuid) {
+    return (await this.queryBus.execute(new GetUserQuery(new UserID(xuid)))).serviceRecord;
   }
 
-  @Get('/player/:gamertag/screenshots')
-  @ApiParam({ name: 'gamertag', example: 'craftycodie' })
-  async getScreenshots(@Param('gamertag') gamertag) {
-    const xuid = await this.queryBus.execute(new GetPlayerXuidQuery(gamertag));
+  @Get('/xuid')
+  @ApiQuery({ name: 'gamertag', example: 'craftycodie' })
+  async getXuid(@Query('gamertag') gamertag) {
+    return (await this.queryBus.execute(new GetPlayerXuidQuery(decodeURIComponent(gamertag)))).value;
+  }
 
-    if (!xuid) throw new NotFoundException();
-
+  @Get('/player/:xuid/screenshots')
+  @ApiParam({ name: 'xuid', example: 'craftycodie' })
+  async getPlayerScreenshots(@Param('xuid') xuid) {
     return (
-      await this.queryBus.execute(new GetPlayerScreenshotsQuery(xuid))
+      await this.queryBus.execute(new GetPlayerScreenshotsQuery(new UserID(xuid)))
     ).map((screenshot) => ({
       ...screenshot,
       data: undefined,
     }));
+  }
+
+  @Get('/screenshots')
+  @ApiQuery({ name: 'pageSize', example: 15 })
+  @ApiQuery({ name: 'pageNumber', example: 1 })
+  async getScreenshots(@Query('pageSize') pageSize, @Query('pageNumber') pageNumber) {
+    return (
+      await this.queryBus.execute(new GetScreenshotsQuery(pageSize, pageNumber))
+    ).map((screenshot) => ({
+      ...screenshot,
+      data: undefined,
+    }));
+  }
+
+  @Get('/players')
+  @ApiQuery({ name: 'pageSize', example: 15 })
+  @ApiQuery({ name: 'pageNumber', example: 1 })
+  async getPlayers(@Query('pageSize') pageSize, @Query('pageNumber') pageNumber) {
+    return (
+      await this.queryBus.execute(new GetUsersQuery(pageSize, pageNumber))
+    ).map((user) => (user.serviceRecord));
   }
 }

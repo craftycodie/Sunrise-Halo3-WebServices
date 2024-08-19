@@ -26,7 +26,7 @@ export default class UserRepository implements IUserRepository {
 
   public async findByGamertag(gamertag: string) {
     const user = await this.userModel.findOne({
-      'serviceRecord.playerName': gamertag,
+      'serviceRecord.playerName': { '$regex': new RegExp(gamertag, 'i') },
     });
     if (!user) return;
 
@@ -41,5 +41,17 @@ export default class UserRepository implements IUserRepository {
     );
 
     return this.userDomainMapper.mapToDomainModel(user);
+  }
+
+  public async list(pageSize: number, pageNumber: number) {
+    const users = await this.userModel.find({
+      'serviceRecord.playerName': { $exists: true, $ne: '' },
+    }, undefined, {
+      limit: pageSize,
+      skip: pageSize * (pageNumber - 1),
+      sort: { createdAt: -1 },
+    });
+
+    return users.map((user) => this.userDomainMapper.mapToDomainModel(user));
   }
 }

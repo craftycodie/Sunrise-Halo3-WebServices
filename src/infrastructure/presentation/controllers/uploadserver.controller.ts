@@ -37,7 +37,6 @@ export class UploadServerController {
     @UploadedFile() upload: Express.Multer.File,
     @Res({ passthrough: true }) res: Response,
   ) {
-    return;
     if (
       !upload.mimetype.startsWith('application/x-halo3-') &&
       !upload.mimetype.startsWith('application/x-atlas-') &&

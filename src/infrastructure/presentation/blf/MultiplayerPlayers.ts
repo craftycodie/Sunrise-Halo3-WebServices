@@ -46,12 +46,12 @@ export function readPlayers(arrayBuffer: ArrayBuffer): MPPLPlayerRecord[] {
       ),
       model: readNumber(arrayBuffer.slice(offset + 0x32, offset + 0x33)),
       foregroundEmblem: readNumber(
-        arrayBuffer.slice(offset + 0x33, offset + 0x34),
-      ),
-      backgroundEmblem: readNumber(
         arrayBuffer.slice(offset + 0x34, offset + 0x35),
       ),
-      emblemFlags: readNumber(arrayBuffer.slice(offset + 0x35, offset + 0x36)),
+      backgroundEmblem: readNumber(
+        arrayBuffer.slice(offset + 0x35, offset + 0x36),
+      ),
+      emblemFlags: readNumber(arrayBuffer.slice(offset + 0x36, offset + 0x37)),
       emblemPrimaryColor: readNumber(
         arrayBuffer.slice(offset + 0x37, offset + 0x38),
       ),

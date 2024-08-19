@@ -51,4 +51,16 @@ export default class ScreenshotRepository implements IScreenshotRepository {
       this.screenshotDomainMapper.mapToDomainModel(screenshot),
     );
   }
+
+  public async list(pageSize: number, pageNumber: number) {
+    const screenshots = await this.screenshotModel.find(undefined, undefined, {
+      limit: pageSize,
+      skip: pageSize * (pageNumber - 1),
+      sort: { createdAt: -1 },
+    });
+
+    return screenshots.map((screenshot) =>
+      this.screenshotDomainMapper.mapToDomainModel(screenshot),
+    );
+  }
 }

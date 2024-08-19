@@ -7,6 +7,7 @@ export default interface IScreenshotRepository {
   find: (id: Uuid) => Promise<Screenshot>;
   findByOwner: (id: UserID) => Promise<Screenshot[]>;
   getRecent: () => Promise<Screenshot[]>;
+  list: (pageSize: number, pageNumber: number) => Promise<Screenshot[]>;
 }
 
 export const IScreenshotRepositorySymbol = Symbol('IScreenshotRepository');
