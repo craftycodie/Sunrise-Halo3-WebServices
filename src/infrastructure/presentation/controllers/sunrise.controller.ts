@@ -396,14 +396,12 @@ export class SunriseController {
     return this.playlistsJson;
   }
 
-  @Get('/player/:gamertag/fileshare')
-  @ApiParam({ name: 'gamertag', example: 'craftycodie' })
-  async getFileshare(@Param('gamertag') gamertag) {
-    const xuid = await this.queryBus.execute(new GetPlayerXuidQuery(gamertag));
-
+  @Get('/player/:xuid/fileshare')
+  @ApiParam({ name: 'xuid', example: 'craftycodie' })
+  async getFileshare(@Param('xuid') xuid) {
     if (!xuid) throw new NotFoundException();
 
-    const fileshare = await this.queryBus.execute(new GetFileshareQuery(xuid));
+    const fileshare = await this.queryBus.execute(new UserID(xuid));
 
     return {
       ...fileshare,
