@@ -1,5 +1,10 @@
 ![hero](hero.jpg)
 # Halo 3 Web Services [![Build status](https://ci.appveyor.com/api/projects/status/eip5dxg0ig0bbpu9?svg=true)](https://ci.appveyor.com/project/craftycodie/sunrise-webserver)
+
+> [!IMPORTANT]
+> This project has been discontinued as of Janauury 2025, it has been rewritten using a combination of NestJS and Rust, and the new API is closed-source. This repository remains public as a rough example of a clean-code NestJS API and as a MVP implementation of a web server for Xbox 360 generation Halo games. Outside contributions will not be accepted at this time, and new issues will likely be ignored.
+
+
 This api contains a rough reimplementation of all of Halo 3's web services including support for 
 - Matchmaking
 - File Share
@@ -58,4 +63,4 @@ $ npm run start:prod
 ```
 ---
 
-Last Updated 05/09/22 by Codie Stella 🐧
+Last Updated 28/05/25 by Codie Newark 🐧
